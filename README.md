@@ -102,6 +102,16 @@ QubeCore Landing Page es un **prototipo de alta fidelidad** diseñado para comun
 | **@tsparticles/slim** | Engine optimizado de partículas |
 | **Lucide React** | Iconos minimalistas SVG |
 
+### Servicios Integrados
+
+| Servicio | Estado | Uso |
+|----------|--------|-----|
+| **EmailJS** | ✅ Implementado | Envío de emails desde formulario de contacto |
+| **Framer Motion** | Animaciones y transiciones fluidas |
+| **@tsparticles/react** | Efecto de constelación de fondo |
+| **@tsparticles/slim** | Engine optimizado de partículas |
+| **Lucide React** | Iconos minimalistas SVG |
+
 ### Por qué este Stack?
 
 - **Vite**: Dev server instantáneo y builds ultra-rápidos
@@ -128,11 +138,20 @@ cd qubecore-landing
 # 2. Instalar dependencias
 npm install
 
-# 3. Iniciar servidor de desarrollo
+# 3. Configurar EmailJS (IMPORTANTE)
+# Copia el archivo de ejemplo y configura tus credenciales
+cp .env.example .env
+# Edita .env con tus credenciales de EmailJS
+# Ver guía completa en EMAILJS_SETUP.md
+
+# 4. Iniciar servidor de desarrollo
 npm run dev
 ```
 
 El servidor estará disponible en: **http://localhost:5173/**
+
+**⚠️ Nota importante sobre EmailJS:**
+Para que el formulario de contacto funcione, debes configurar EmailJS. Sigue la guía completa en [`EMAILJS_SETUP.md`](./EMAILJS_SETUP.md).
 
 ### Comandos Disponibles
 
@@ -451,10 +470,23 @@ main.jsx
 - CTA: "Send Message" con icono Send
 - Nota: "We typically respond within 24 hours"
 
-**Integración futura:**
-- Formspree
-- EmailJS
-- Backend custom
+**Integración EmailJS:** ✅ **IMPLEMENTADO**
+- ✅ Envío de emails automático al correo de QubeCore
+- ✅ Estados de loading, éxito y error
+- ✅ Mensajes visuales para el usuario
+- ✅ Spinner durante el envío
+- ✅ Reset automático del formulario tras envío exitoso
+- ✅ Timeout de mensajes (5 segundos)
+
+**Configuración:**
+Ver guía completa en [`EMAILJS_SETUP.md`](./EMAILJS_SETUP.md)
+
+**Variables de entorno requeridas:**
+```env
+VITE_EMAILJS_PUBLIC_KEY=tu_public_key
+VITE_EMAILJS_SERVICE_ID=tu_service_id
+VITE_EMAILJS_TEMPLATE_ID=tu_template_id
+```
 
 ---
 
@@ -764,10 +796,10 @@ const Contact = lazy(() => import('./components/Contact'));
 
 ### Funcionalidades Pendientes
 
-- [ ] **Backend para formulario**
-  - Integrar Formspree
-  - O EmailJS
-  - O backend custom (Node.js + Nodemailer)
+- [x] **Backend para formulario** ✅
+  - [x] EmailJS implementado y funcional
+  - [ ] Auto-respuesta al usuario (opcional)
+  - [ ] Integración con CRM (opcional)
 
 - [ ] **Contenido Real**
   - Textos finales de marketing
@@ -792,9 +824,9 @@ const Contact = lazy(() => import('./components/Contact'));
 
 ### Mejoras de UX
 
-- [ ] Loading state en formulario
-- [ ] Mensajes de éxito/error
-- [ ] Validación avanzada de formulario
+- [x] Loading state en formulario ✅
+- [x] Mensajes de éxito/error ✅
+- [x] Validación avanzada de formulario ✅
 - [ ] Animación de loading global
 - [ ] Skip to content link (accesibilidad)
 

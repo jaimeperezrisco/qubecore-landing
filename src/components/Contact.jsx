@@ -1,9 +1,12 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { Mail, User, Building, MessageSquare, Send } from 'lucide-react';
+import { Mail, User, Building, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import emailjs from '@emailjs/browser';
+import { emailJsConfig } from '../config/emailjs.config';
 
 const Contact = () => {
   const ref = useRef(null);
+  const formRef = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   
   const [formData, setFormData] = useState({
@@ -14,11 +17,78 @@ const Contact = () => {
     message: '',
   });
 
-  const handleSubmit = (e) => {
+  const [formStatus, setFormStatus] = useState({
+    loading: false,
+    success: false,
+    error: false,
+    message: '',
+  });
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Aquí se integrará el backend más adelante
-    console.log('Form submitted:', formData);
-    alert('Thank you for your interest! We will contact you soon.');
+    
+    // Reset status
+    setFormStatus({ loading: true, success: false, error: false, message: '' });
+
+    try {
+      // Inicializar EmailJS con tu Public Key
+      emailjs.init(emailJsConfig.publicKey);
+
+      // Enviar email usando el template
+      const result = await emailjs.send(
+        emailJsConfig.serviceId,
+        emailJsConfig.templateId,
+        {
+          from_name: formData.name,
+          from_email: formData.email,
+          company: formData.company,
+          interest: formData.interest,
+          message: formData.message,
+          to_name: 'QubeCore Team',
+        },
+        emailJsConfig.publicKey
+      );
+
+      console.log('Email sent successfully:', result);
+
+      // Success state
+      setFormStatus({
+        loading: false,
+        success: true,
+        error: false,
+        message: 'Thank you! Your message has been sent successfully. We will contact you within 24 hours.',
+      });
+
+      // Reset form
+      setFormData({
+        name: '',
+        company: '',
+        email: '',
+        interest: 'hardware',
+        message: '',
+      });
+
+      // Reset success message after 5 seconds
+      setTimeout(() => {
+        setFormStatus({ loading: false, success: false, error: false, message: '' });
+      }, 5000);
+
+    } catch (error) {
+      console.error('EmailJS Error:', error);
+      
+      // Error state
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: true,
+        message: 'Oops! Something went wrong. Please try again or contact us directly at contact@qubecore.com',
+      });
+
+      // Reset error message after 5 seconds
+      setTimeout(() => {
+        setFormStatus({ loading: false, success: false, error: false, message: '' });
+      }, 5000);
+    }
   };
 
   const handleChange = (e) => {
@@ -55,7 +125,30 @@ const Contact = () => {
           className="glass-card p-8 md:p-12 border-2 border-[var(--accent-cyan)]"
           ref={ref}
         >
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Status Messages */}
+          {formStatus.success && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl bg-green-500/20 border border-green-500/50 flex items-start gap-3"
+            >
+              <CheckCircle className="text-green-400 flex-shrink-0 mt-0.5" size={20} />
+              <p className="text-green-100 text-sm">{formStatus.message}</p>
+            </motion.div>
+          )}
+
+          {formStatus.error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-6 p-4 rounded-xl bg-red-500/20 border border-red-500/50 flex items-start gap-3"
+            >
+              <AlertCircle className="text-red-400 flex-shrink-0 mt-0.5" size={20} />
+              <p className="text-red-100 text-sm">{formStatus.message}</p>
+            </motion.div>
+          )}
+
+          <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
             {/* Name */}
             <div>
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
@@ -68,9 +161,11 @@ const Contact = () => {
                 value={formData.name}
                 onChange={handleChange}
                 required
+                disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all"
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="John Doe"
               />
             </div>
@@ -87,10 +182,12 @@ const Contact = () => {
                 value={formData.company}
                 onChange={handleChange}
                 required
+                disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all"
-                placeholder="Acme Corp"
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="QubeCore"
               />
             </div>
 
@@ -106,10 +203,12 @@ const Contact = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
+                disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all"
-                placeholder="john@acme.com"
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="John@qubecore.com"
               />
             </div>
 
@@ -122,9 +221,11 @@ const Contact = () => {
                 name="interest"
                 value={formData.interest}
                 onChange={handleChange}
+                disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all"
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="hardware">Quantum Hardware Access</option>
                 <option value="training">Training & Education</option>
@@ -144,9 +245,11 @@ const Contact = () => {
                 value={formData.message}
                 onChange={handleChange}
                 rows="5"
+                disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all resize-none"
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all resize-none
+                         disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Tell us about your quantum computing needs..."
               />
             </div>
@@ -154,12 +257,22 @@ const Contact = () => {
             {/* Submit Button */}
             <motion.button
               type="submit"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full btn-primary text-lg py-4 flex items-center justify-center gap-2"
+              disabled={formStatus.loading}
+              whileHover={!formStatus.loading ? { scale: 1.02 } : {}}
+              whileTap={!formStatus.loading ? { scale: 0.98 } : {}}
+              className="w-full btn-primary text-lg py-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Send size={20} />
-              Send Message
+              {formStatus.loading ? (
+                <>
+                  <Loader2 size={20} className="animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Send size={20} />
+                  Send Message
+                </>
+              )}
             </motion.button>
           </form>
 
