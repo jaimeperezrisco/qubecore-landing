@@ -30,11 +30,15 @@ const Contact = () => {
     // Reset status
     setFormStatus({ loading: true, success: false, error: false, message: '' });
 
-    try {
-      // Inicializar EmailJS con tu Public Key
-      emailjs.init(emailJsConfig.publicKey);
+    // Debug: Log configuration
+    console.log('🔍 EmailJS Configuration Check:');
+    console.log('Service ID:', emailJsConfig.serviceId);
+    console.log('Template ID:', emailJsConfig.templateId);
+    console.log('Public Key:', emailJsConfig.publicKey);
+    console.log('Form Data:', formData);
 
-      // Enviar email usando el template
+    try {
+      // Enviar email usando el template (EmailJS usa la Public Key automáticamente)
       const result = await emailjs.send(
         emailJsConfig.serviceId,
         emailJsConfig.templateId,
@@ -49,7 +53,7 @@ const Contact = () => {
         emailJsConfig.publicKey
       );
 
-      console.log('Email sent successfully:', result);
+      console.log('✅ Email sent successfully:', result);
 
       // Success state
       setFormStatus({
@@ -74,14 +78,16 @@ const Contact = () => {
       }, 5000);
 
     } catch (error) {
-      console.error('EmailJS Error:', error);
+      console.error('❌ EmailJS Error:', error);
+      console.error('Error Text:', error.text);
+      console.error('Error Status:', error.status);
       
       // Error state
       setFormStatus({
         loading: false,
         success: false,
         error: true,
-        message: 'Oops! Something went wrong. Please try again or contact us directly at contact@qubecore.com',
+        message: `Oops! Something went wrong: ${error.text || error.message}. Please try again or contact us directly at contact@qubecore.com`,
       });
 
       // Reset error message after 5 seconds
