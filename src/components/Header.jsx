@@ -3,11 +3,20 @@ import { Sun, Moon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Header = () => {
-  const [isDark, setIsDark] = useState(true); // Modo oscuro por defecto
+  const [isDark, setIsDark] = useState(true);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     // Establecer modo oscuro por defecto al cargar
     document.documentElement.classList.add('dark');
+
+    // Detectar scroll para aumentar opacidad del header
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const toggleTheme = () => {
@@ -27,22 +36,24 @@ const Header = () => {
     <motion.header
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 glass"
+      className={`fixed top-0 left-0 right-0 z-50 ${
+        isScrolled ? 'glass-header-scrolled' : 'glass-header'
+      }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 md:px-12 py-4 flex items-center justify-between">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-3 md:py-4 flex items-center justify-between">
         {/* Logo */}
         <a href="#hero" className="flex items-center space-x-1">
-          <span className="text-2xl font-heading font-light">QUBE</span>
-          <span className="text-2xl font-heading font-bold text-gradient">CORE</span>
+          <span className="text-xl md:text-2xl font-heading font-light text-[var(--text-primary)]">QUBE</span>
+          <span className="text-xl md:text-2xl font-heading font-bold text-gradient">CORE</span>
         </a>
 
-        {/* Navigation Links - Hidden on mobile */}
-        <div className="hidden md:flex items-center space-x-8">
+        {/* Navigation Links - Responsive */}
+        <div className="flex items-center space-x-3 sm:space-x-4 md:space-x-8">
           {navItems.map((item) => (
             <a
               key={item.name}
               href={item.href}
-              className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] transition-colors"
+              className="text-xs sm:text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] transition-colors"
             >
               {item.name}
             </a>
