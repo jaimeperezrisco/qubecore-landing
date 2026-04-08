@@ -57,6 +57,7 @@ QubeCore Landing Page es un **prototipo de alta fidelidad** diseñado para comun
 ### Características Visuales
 
 - ✅ **Glassmorphism** en todas las tarjetas y paneles
+- ✅ **Header con glass dinámico** (75% sin scroll → 92% con scroll)
 - ✅ **Constelación Interactiva** de fondo (80 partículas conectadas)
 - ✅ **Modo Oscuro/Claro** con toggle animado
 - ✅ **Scroll Parallax** para profundidad visual
@@ -66,12 +67,13 @@ QubeCore Landing Page es un **prototipo de alta fidelidad** diseñado para comun
 
 ### Características Funcionales
 
-- ✅ **Navegación sticky** con efecto glassmorphic
+- ✅ **Navegación sticky** con efecto glassmorphic dinámico
+- ✅ **Navbar responsive** visible en todas las pantallas (móvil, tablet, desktop)
 - ✅ **Smooth scroll** entre secciones
-- ✅ **Formulario de contacto** con validación HTML5
-- ✅ **Responsive design** (Mobile, Tablet, Desktop)
+- ✅ **Formulario de contacto** con integración EmailJS
+- ✅ **Responsive design** optimizado (Mobile, Tablet, Desktop)
 - ✅ **Optimización SEO** básica
-- ✅ **Performance optimizado** (Build < 500KB)
+- ✅ **Performance optimizado** (Build ~500KB)
 
 ### Características de Negocio
 
@@ -178,8 +180,8 @@ npm run build
 dist/
 ├── index.html                 (0.62 KB gzip)
 ├── assets/
-│   ├── index-[hash].css      (23.70 KB → 4.89 KB gzip)
-│   └── index-[hash].js       (490.85 KB → 148.69 KB gzip)
+│   ├── index-[hash].css      (27.95 KB → 5.57 KB gzip)
+│   └── index-[hash].js       (497.39 KB → 150.84 KB gzip)
 ```
 
 ---
@@ -242,10 +244,20 @@ main.jsx
 
 **Características:**
 - Logo tipográfico: **QUBE**CORE
-- Navegación con links a secciones
+- Navegación responsive visible en todas las pantallas
 - Toggle Dark/Light mode animado
-- Sticky en scroll
-- Efecto glassmorphic
+- Sticky en scroll con detección automática
+- **Efecto glassmorphism dinámico**:
+  - Sin scroll: 75% opacidad + blur 12px (translúcido)
+  - Con scroll: 92% opacidad + blur 20px (más sólido, evita solapamiento de texto)
+- Funciona correctamente en ambos modos (dark/light)
+
+**Responsive Design:**
+| Pantalla | Logo | Links | Espaciado |
+|----------|------|-------|-----------|
+| Móvil (< 640px) | `text-xl` | `text-xs`, `space-x-3` | `px-4`, `py-3` |
+| Tablet (640px+) | `text-xl` | `text-sm`, `space-x-4` | `px-6`, `py-3` |
+| Desktop (768px+) | `text-2xl` | `text-sm`, `space-x-8` | `px-12`, `py-4` |
 
 **Navegación:**
 - Home → #hero
@@ -569,6 +581,50 @@ VITE_EMAILJS_TEMPLATE_ID=tu_template_id
 
 ### Componentes CSS Reutilizables
 
+#### .glass-header (Estado sin scroll)
+
+```css
+.glass-header {
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid var(--glass-border);
+  transition: all 0.3s ease;
+}
+
+/* Dark mode */
+.dark .glass-header {
+  background: rgba(10, 15, 26, 0.75);
+}
+
+/* Light mode */
+html:not(.dark) .glass-header {
+  background: rgba(240, 244, 248, 0.75);
+}
+```
+
+#### .glass-header-scrolled (Estado con scroll)
+
+```css
+.glass-header-scrolled {
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  border-bottom: 1px solid var(--glass-border);
+  transition: all 0.3s ease;
+}
+
+/* Dark mode - más opaco para evitar solapamiento de texto */
+.dark .glass-header-scrolled {
+  background: rgba(10, 15, 26, 0.92);
+  border-bottom-color: rgba(0, 240, 255, 0.15);
+}
+
+/* Light mode - más opaco para evitar solapamiento de texto */
+html:not(.dark) .glass-header-scrolled {
+  background: rgba(240, 244, 248, 0.92);
+  border-bottom-color: rgba(0, 153, 204, 0.2);
+}
+```
+
 #### .glass
 
 ```css
@@ -755,10 +811,10 @@ links: {
 ### Métricas Actuales
 
 **Build Size:**
-- HTML: 0.62 KB (gzip: 0.37 KB)
-- CSS: 23.70 KB (gzip: 4.89 KB)
-- JS: 490.85 KB (gzip: 148.69 KB)
-- **Total gzip: ~154 KB**
+- HTML: 0.62 KB (gzip: 0.38 KB)
+- CSS: 27.95 KB (gzip: 5.57 KB)
+- JS: 497.39 KB (gzip: 150.84 KB)
+- **Total gzip: ~157 KB**
 
 ### Optimizaciones Implementadas
 
@@ -858,6 +914,28 @@ export default {
   },
 }
 ```
+
+### Header Glass Effect no Funciona
+
+**Síntoma:**
+El header se ve completamente blanco o no tiene efecto glass al hacer scroll.
+
+**Solución:**
+Verifica que `src/index.css` tenga los selectores correctos para ambos modos:
+
+```css
+/* Dark mode */
+.dark .glass-header-scrolled {
+  background: rgba(10, 15, 26, 0.92);
+}
+
+/* Light mode - IMPORTANTE: usar html:not(.dark) */
+html:not(.dark) .glass-header-scrolled {
+  background: rgba(240, 244, 248, 0.92);
+}
+```
+
+**Nota:** No usar `:root .glass-header-scrolled` ya que tiene menor especificidad.
 
 ### Modo Oscuro no se Activa por Defecto
 

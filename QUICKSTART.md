@@ -13,7 +13,11 @@ cd qubecore-landing
 # 2. Instalar dependencias (si aún no están instaladas)
 npm install
 
-# 3. Iniciar servidor de desarrollo
+# 3. Configurar EmailJS (opcional pero recomendado)
+cp .env.example .env
+# Edita .env con tus credenciales de EmailJS
+
+# 4. Iniciar servidor de desarrollo
 npm run dev
 ```
 
@@ -46,6 +50,16 @@ export default {
 }
 ```
 
+### Header se ve blanco/sin efecto glass
+
+**Problema**: Al hacer scroll, el header pierde el efecto glassmorphism.
+
+**Solución**: Ya está corregido. El header usa clases dinámicas:
+- `glass-header` (sin scroll): 75% opacidad
+- `glass-header-scrolled` (con scroll): 92% opacidad
+
+Verifica que `src/index.css` use `html:not(.dark)` para el modo claro (NO `:root`).
+
 ### Configuración de Tailwind v4
 
 **Importante**: Este proyecto NO usa `tailwind.config.js`. 
@@ -68,7 +82,7 @@ La configuración de Tailwind v4 se hace en `src/index.css` usando la directiva 
 qubecore-landing/
 ├── src/
 │   ├── components/        # Componentes React
-│   │   ├── Header.jsx
+│   │   ├── Header.jsx     # Navbar con glass effect dinámico
 │   │   ├── Hero.jsx
 │   │   ├── ParticlesBackground.jsx
 │   │   ├── ProblemSolution.jsx
@@ -77,12 +91,15 @@ qubecore-landing/
 │   │   ├── WhyUs.jsx
 │   │   ├── HardwareDeepDive.jsx
 │   │   ├── Team.jsx
-│   │   └── Contact.jsx
+│   │   └── Contact.jsx    # Formulario con EmailJS
+│   ├── config/
+│   │   └── emailjs.config.js
 │   ├── App.jsx           # Componente principal
 │   ├── main.jsx          # Punto de entrada
 │   └── index.css         # Estilos y configuración Tailwind v4
 ├── index.html
 ├── postcss.config.js     # Configuración PostCSS
+├── .env.example          # Template variables de entorno
 └── package.json
 ```
 
@@ -119,17 +136,18 @@ Las fuentes se configuran en `@theme` dentro de `src/index.css`:
 
 ## ✨ Características Implementadas
 
-- ✅ Modo oscuro/claro con toggle
-- ✅ Efecto glassmorphism en tarjetas
+- ✅ Modo oscuro/claro con toggle animado
+- ✅ Efecto glassmorphism dinámico en header
+- ✅ Navbar responsive (visible en móvil, tablet y desktop)
 - ✅ Animaciones de scroll con Framer Motion
 - ✅ Constelación interactiva de fondo
-- ✅ Diseño responsive
+- ✅ Diseño responsive optimizado
 - ✅ Sección Hardware consultiva (sin productos fijos)
-- ✅ Formulario de contacto
+- ✅ Formulario de contacto con EmailJS
 
 ## 🚀 Próximos Pasos
 
-1. **Backend para Formulario**: Integrar Formspree o EmailJS
+1. **Configurar EmailJS**: Ver guía en `EMAILJS_SETUP.md`
 2. **Contenido Real**: Reemplazar textos de placeholder
 3. **Imágenes**: Añadir imágenes del equipo y logos
 4. **SEO**: Mejorar meta tags y Open Graph
@@ -141,8 +159,10 @@ Si encuentras algún problema:
 1. Verifica que estás usando Node.js v18 o superior
 2. Elimina `node_modules` y vuelve a ejecutar `npm install`
 3. Asegúrate de que no haya otro proceso en el puerto 5173
+4. Revisa la consola del navegador (F12) para errores
 
 ---
 
-**Estado**: ✅ Completamente Funcional
-**Última Verificación**: Abril 2026
+**Estado**: ✅ Completamente Funcional  
+**Versión**: 1.1.0  
+**Última Actualización**: Abril 2026
