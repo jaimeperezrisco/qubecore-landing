@@ -62,7 +62,7 @@ const HardwareDeepDive = () => {
           </p>
           <div className="inline-block glass-card px-6 py-3">
             <p className="text-[var(--accent-cyan)] font-semibold">
-              🚫 No Fixed Products • ✅ 100% Customized Solutions
+              No Fixed Products • 100% Customized Solutions
             </p>
           </div>
         </motion.div>

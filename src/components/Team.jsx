@@ -8,17 +8,17 @@ const Team = () => {
 
   const teamMembers = [
     {
-      name: 'Dr. Sarah Chen',
+      name: 'Janek',
       role: 'Founder & Chief Quantum Scientist',
       specialty: 'Quantum algorithms & error correction',
     },
     {
-      name: 'Marcus Rodriguez',
+      name: 'Gabriel',
       role: 'Lead Hardware Architect',
       specialty: 'Superconducting qubit design',
     },
     {
-      name: 'Elena Volkov',
+      name: 'tari_18',
       role: 'Strategic Partnerships Manager',
       specialty: 'Enterprise quantum integration',
     },
