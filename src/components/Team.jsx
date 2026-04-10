@@ -8,18 +8,18 @@ const Team = () => {
 
   const teamMembers = [
     {
-      name: 'Janek',
-      role: 'Founder & Chief Quantum Scientist',
+      name: 'Jan Rutkowski',
+      role: 'Strategic Partnerships Manager',
       specialty: 'Quantum algorithms & error correction',
     },
     {
-      name: 'Gabriel',
-      role: 'Lead Hardware Architect',
+      name: 'Grzegorz Taras',
+      role: 'Founder & Chief Quantum Scientist',
       specialty: 'Superconducting qubit design',
     },
     {
-      name: 'tari_18',
-      role: 'Strategic Partnerships Manager',
+      name: 'Gabriel Osmólski',
+      role: 'Lead Hardware Architect',
       specialty: 'Enterprise quantum integration',
     },
   ];
