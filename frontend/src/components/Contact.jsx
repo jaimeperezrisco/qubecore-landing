@@ -1,8 +1,16 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { Mail, User, Building, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import emailjs from '@emailjs/browser';
-import { emailJsConfig } from '../config/emailjs.config';
+
+// Mapeo de interés → servicioId (coincide con el orden en la BD)
+const INTEREST_MAP = {
+  hardware: 1,
+  software: 2,
+  consulting: 3,
+  education: 4,
+  cloud: 5,
+  security: 6,
+};
 
 const Contact = () => {
   const ref = useRef(null);
@@ -39,9 +47,9 @@ const Contact = () => {
           nombre: formData.name,
           email: formData.email,
           empresa: formData.company,
-          telefono: null, // Si decides añadir campo de teléfono al form, aquí va
+          telefono: null,
           mensaje: formData.message,
-          // 'interest' no está directamente mapeado al backend a menos que usemos servicioId
+          servicioId: INTEREST_MAP[formData.interest] || null,
         })
       });
 
@@ -229,9 +237,11 @@ const Contact = () => {
                          disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="hardware">Quantum Hardware Access</option>
-                <option value="training">Training & Education</option>
-                <option value="consulting">Consulting & Support</option>
-                <option value="general">General Inquiry</option>
+                <option value="software">Quantum Software Development</option>
+                <option value="consulting">Quantum Consulting</option>
+                <option value="education">Quantum Education</option>
+                <option value="cloud">Quantum Cloud Services</option>
+                <option value="security">Quantum Security</option>
               </select>
             </div>
 

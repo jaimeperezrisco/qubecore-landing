@@ -1,6 +1,5 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { User } from 'lucide-react';
 
 const Team = () => {
   const ref = useRef(null);
@@ -11,16 +10,22 @@ const Team = () => {
       name: 'Jan Rutkowski',
       role: 'Strategic Partnerships Manager',
       specialty: 'Quantum algorithms & error correction',
+      initials: 'JR',
+      color: 'from-cyan-500 to-blue-600',
     },
     {
       name: 'Grzegorz Taras',
       role: 'Founder & Chief Quantum Scientist',
       specialty: 'Superconducting qubit design',
+      initials: 'GT',
+      color: 'from-purple-500 to-pink-600',
     },
     {
       name: 'Gabriel Osmólski',
       role: 'Lead Hardware Architect',
       specialty: 'Enterprise quantum integration',
+      initials: 'GO',
+      color: 'from-emerald-500 to-teal-600',
     },
   ];
 
@@ -55,9 +60,9 @@ const Team = () => {
                 <div className="relative">
                   <motion.div
                     whileHover={{ scale: 1.05 }}
-                    className="w-32 h-32 rounded-full glass flex items-center justify-center border-2 border-[var(--accent-cyan)] overflow-hidden"
+                    className={`w-32 h-32 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center border-2 border-white/20 shadow-lg overflow-hidden`}
                   >
-                    <User size={48} className="text-[var(--accent-cyan)]" />
+                    <span className="text-3xl font-bold text-white tracking-wide">{member.initials}</span>
                   </motion.div>
                   {/* Glow effect on hover */}
                   <div className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity glow" />

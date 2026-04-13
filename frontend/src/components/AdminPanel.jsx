@@ -245,11 +245,11 @@ const AdminPanel = () => {
                         </p>
                       </td>
                       <td className="p-4 align-top">
-                        <div className="flex flex-col gap-2 relative group">
+                        <div className="flex flex-col gap-2">
                           <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(sol.estado)}`}>
                             {sol.estado.replace('_', ' ')}
                           </span>
-                          <div className="md:hidden group-hover:flex md:group-hover:flex flex-row gap-1 mt-2">
+                          <div className="flex flex-row gap-1 mt-1">
                              {(sol.estado === 'PENDIENTE' || sol.estado === 'EN_REVISION') && (
                                <button onClick={() => changeStatus(sol.id, 'ACEPTADA')} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40" title="Accept"><CheckCircle size={14}/></button>
                              )}

@@ -24,11 +24,6 @@ public class SolicitudService {
     private final ServicioRepository servicioRepository;
 
     public SolicitudResponse crear(SolicitudRequest dto) {
-        if (solicitudRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException(
-                "Ya existe una solicitud registrada con este email");
-        }
-
         Solicitud s = new Solicitud();
         s.setNombre(dto.getNombre());
         s.setEmail(dto.getEmail());
