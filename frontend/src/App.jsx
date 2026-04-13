@@ -8,8 +8,24 @@ import WhyUs from './components/WhyUs';
 import HardwareDeepDive from './components/HardwareDeepDive';
 import Team from './components/Team';
 import Contact from './components/Contact';
+import AdminPanel from './components/AdminPanel';
+import { useState, useEffect } from 'react';
 
 function App() {
+  const [isAdminRoute, setIsAdminRoute] = useState(window.location.pathname.startsWith('/admin'));
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setIsAdminRoute(window.location.pathname.startsWith('/admin'));
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  if (isAdminRoute) {
+    return <AdminPanel />;
+  }
+
   return (
     <div className="relative min-h-screen overflow-x-hidden">
       {/* Particles Background - Fixed across all sections */}
