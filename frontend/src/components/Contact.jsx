@@ -30,37 +30,34 @@ const Contact = () => {
     // Reset status
     setFormStatus({ loading: true, success: false, error: false, message: '' });
 
-    // Debug: Log configuration
-    console.log('🔍 EmailJS Configuration Check:');
-    console.log('Service ID:', emailJsConfig.serviceId);
-    console.log('Template ID:', emailJsConfig.templateId);
-    console.log('Public Key:', emailJsConfig.publicKey);
-    console.log('Form Data:', formData);
-
     try {
-      // Enviar email usando el template (EmailJS usa la Public Key automáticamente)
-      const result = await emailjs.send(
-        emailJsConfig.serviceId,
-        emailJsConfig.templateId,
-        {
-          from_name: formData.name,
-          from_email: formData.email,
-          company: formData.company,
-          interest: formData.interest,
-          message: formData.message,
-          to_name: 'QubeCore Team',
-        },
-        emailJsConfig.publicKey
-      );
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${API_URL}/api/solicitudes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: formData.name,
+          email: formData.email,
+          empresa: formData.company,
+          telefono: null, // Si decides añadir campo de teléfono al form, aquí va
+          mensaje: formData.message,
+          // 'interest' no está directamente mapeado al backend a menos que usemos servicioId
+        })
+      });
 
-      console.log('✅ Email sent successfully:', result);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error enviando solicitud');
+      }
+
+      console.log('✅ Request created successfully');
 
       // Success state
       setFormStatus({
         loading: false,
         success: true,
         error: false,
-        message: 'Thank you! Your message has been sent successfully. We will contact you within 24 hours.',
+        message: 'Thank you! Your request has been sent successfully. We will contact you soon.',
       });
 
       // Reset form
@@ -78,16 +75,14 @@ const Contact = () => {
       }, 5000);
 
     } catch (error) {
-      console.error('❌ EmailJS Error:', error);
-      console.error('Error Text:', error.text);
-      console.error('Error Status:', error.status);
+      console.error('❌ Request Error:', error);
       
       // Error state
       setFormStatus({
         loading: false,
         success: false,
         error: true,
-        message: `Oops! Something went wrong: ${error.text || error.message}. Please try again or contact us directly at contact@qubecore.com`,
+        message: `Oops! Something went wrong: ${error.message}. Please try again.`,
       });
 
       // Reset error message after 5 seconds
