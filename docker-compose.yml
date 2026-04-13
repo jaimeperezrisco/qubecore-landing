@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: qubecore-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-QubeCore2024!SecurePass}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-qubecore}
+      MYSQL_USER: ${MYSQL_USER:-qubecore_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-QubeCore_DB_Pass_2024!}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - qubecore-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-QubeCore2024!SecurePass}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./qubecore-backend
+      dockerfile: Dockerfile
+    container_name: qubecore-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE:-qubecore}
+      DB_USER: ${MYSQL_USER:-qubecore_user}
+      DB_PASSWORD: ${MYSQL_PASSWORD:-QubeCore_DB_Pass_2024!}
+      JWT_SECRET: ${JWT_SECRET:-TuClaveSecretaSuperLargaDeAlMenos64CaracteresParaHS512QubeCore2024!!}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+      SHOW_SQL: "false"
+    ports:
+      - "8080:8080"
+    networks:
+      - qubecore-network
+
+  nginx:
+    # Usamos NGINX puro en VPS, ya que el Front vive en VERCEL.
+    image: nginx:alpine
+    container_name: qubecore-nginx
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      # Si da conflicto de puertos 80/443 en VPS, cambiar a "18080:80" etc.
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+    networks:
+      - qubecore-network
+
+  certbot:
+    image: certbot/certbot
+    container_name: qubecore-certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  qubecore-network:
+    driver: bridge
