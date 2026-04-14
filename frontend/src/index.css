@@ -151,6 +151,24 @@
     color: var(--bg-primary);
   }
 
+  .contact-select {
+    background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+    color: var(--text-primary);
+  }
+
+  .dark .contact-select {
+    color-scheme: dark;
+  }
+
+  html:not(.dark) .contact-select {
+    color-scheme: light;
+  }
+
+  .contact-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+  }
+
   /* Section Container */
   .section {
     padding-top: 5rem;
