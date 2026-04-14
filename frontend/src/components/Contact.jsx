@@ -231,7 +231,7 @@ const Contact = () => {
                 value={formData.interest}
                 onChange={handleChange}
                 disabled={formStatus.loading}
-                className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
+                className="contact-select w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
                          focus:outline-none focus:border-[var(--accent-cyan)] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
