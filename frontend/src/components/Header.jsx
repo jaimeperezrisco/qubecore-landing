@@ -1,15 +1,23 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X, Accessibility } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoSinFondo from '../assets/logos/logo-sf.png';
 
 const Header = () => {
   const [isDark, setIsDark] = useState(true);
+  const [isDyslexicMode, setIsDyslexicMode] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.add('dark');
+
+    // Load dyslexic mode preference from localStorage
+    const savedDyslexicMode = localStorage.getItem('dyslexic-mode') === 'true';
+    setIsDyslexicMode(savedDyslexicMode);
+    if (savedDyslexicMode) {
+      document.documentElement.classList.add('dyslexic-mode');
+    }
 
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -33,6 +41,13 @@ const Header = () => {
   const toggleTheme = () => {
     setIsDark(!isDark);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const toggleDyslexicMode = () => {
+    const newState = !isDyslexicMode;
+    setIsDyslexicMode(newState);
+    localStorage.setItem('dyslexic-mode', newState);
+    document.documentElement.classList.toggle('dyslexic-mode', newState);
   };
 
   const navItems = [
@@ -92,6 +107,31 @@ const Header = () => {
               ) : (
                 <Moon size={20} className="text-[var(--accent-cyan)]" />
               )}
+            </motion.div>
+          </button>
+
+          {/* Accessibility Toggle (Dyslexic Mode) */}
+          <button
+            onClick={toggleDyslexicMode}
+            className={`p-2 rounded-full glass-card hover:glow transition-all ${
+              isDyslexicMode ? 'glow-magenta' : ''
+            }`}
+            aria-label="Toggle dyslexic-friendly font"
+            title="OpenDyslexic Font Mode"
+          >
+            <motion.div
+              initial={false}
+              animate={{ scale: isDyslexicMode ? 1.1 : 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Accessibility
+                size={20}
+                className={`${
+                  isDyslexicMode
+                    ? 'text-[var(--accent-magenta)]'
+                    : 'text-[var(--accent-cyan)]'
+                }`}
+              />
             </motion.div>
           </button>
 

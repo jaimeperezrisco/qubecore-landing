@@ -22,6 +22,14 @@ function App() {
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
 
+  // Initialize dyslexic mode preference from localStorage
+  useEffect(() => {
+    const isDyslexicMode = localStorage.getItem('dyslexic-mode') === 'true';
+    if (isDyslexicMode) {
+      document.documentElement.classList.add('dyslexic-mode');
+    }
+  }, []);
+
   if (isAdminRoute) {
     return <AdminPanel />;
   }
