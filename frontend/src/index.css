@@ -58,8 +58,8 @@
   
   /* Estado inicial (sin scroll) - Ambos modos */
   .glass-header {
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(2px) saturate(135%);
+    -webkit-backdrop-filter: blur(2px) saturate(135%);
     border-bottom: 1px solid var(--glass-border);
     box-shadow: 0 4px 30px var(--glass-shadow);
     transition: all 0.3s ease;
@@ -67,18 +67,18 @@
 
   /* Dark mode - Sin scroll */
   .dark .glass-header {
-    background: rgba(10, 15, 26, 0.75);
+    background: rgba(10, 15, 26, 0.54);
   }
 
   /* Light mode - Sin scroll */
   html:not(.dark) .glass-header {
-    background: rgba(240, 244, 248, 0.75);
+    background: rgba(240, 244, 248, 0.54);
   }
 
   /* Estado con scroll - Ambos modos */
   .glass-header-scrolled {
-    backdrop-filter: blur(20px) saturate(200%);
-    -webkit-backdrop-filter: blur(20px) saturate(200%);
+    backdrop-filter: blur(4px) saturate(145%);
+    -webkit-backdrop-filter: blur(4px) saturate(145%);
     border-bottom: 1px solid var(--glass-border);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
@@ -86,13 +86,13 @@
 
   /* Dark mode - Con scroll */
   .dark .glass-header-scrolled {
-    background: rgba(10, 15, 26, 0.92);
+    background: rgba(10, 15, 26, 0.7);
     border-bottom-color: rgba(0, 240, 255, 0.15);
   }
 
   /* Light mode - Con scroll */
   html:not(.dark) .glass-header-scrolled {
-    background: rgba(240, 244, 248, 0.92);
+    background: rgba(240, 244, 248, 0.7);
     border-bottom-color: rgba(0, 153, 204, 0.2);
   }
 

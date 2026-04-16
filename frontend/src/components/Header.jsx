@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import logoSinFondo from '../assets/logos/logo-sf.png';
 
 const Header = () => {
   const [isDark, setIsDark] = useState(true);
@@ -52,9 +53,12 @@ const Header = () => {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-3 md:py-4 flex items-center justify-between">
         {/* Logo */}
-        <a href="#hero" className="flex items-center space-x-1">
-          <span className="text-xl md:text-2xl font-heading font-light text-[var(--text-primary)]">QUBE</span>
-          <span className="text-xl md:text-2xl font-heading font-bold text-gradient">CORE</span>
+        <a href="#hero" className="flex items-center">
+          <img
+            src={logoSinFondo}
+            alt="QubeCore"
+            className="h-10 md:h-12 w-auto object-contain"
+          />
         </a>
 
         {/* Navigation Links - Desktop */}
