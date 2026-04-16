@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import logoFondoBlanco from '../assets/logos/logo_fondo_blanco_x.webp';
-import logoFondoNegro from '../assets/logos/logo_fondo_negro_x.webp';
+import logoSinFondo from '../assets/logos/logo-sf.png';
 
 const Header = () => {
   const [isDark, setIsDark] = useState(true);
@@ -44,8 +43,6 @@ const Header = () => {
     { name: 'Contact', href: '#contact' },
   ];
 
-  const currentLogo = isDark ? logoFondoNegro : logoFondoBlanco;
-
   return (
     <motion.header
       initial={{ y: -100 }}
@@ -58,7 +55,7 @@ const Header = () => {
         {/* Logo */}
         <a href="#hero" className="flex items-center">
           <img
-            src={currentLogo}
+            src={logoSinFondo}
             alt="QubeCore"
             className="h-10 md:h-12 w-auto object-contain"
           />
