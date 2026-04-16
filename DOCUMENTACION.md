@@ -60,6 +60,29 @@ Se encarga de la sesión de administrador sin necesidad de un framework SSR comp
 3. Estando verificado, hace una validación dual asíncrona (`Promise.all()`) cargando simultáneamente la masa tabular con la lista de interacciones de empresas (solicitudes), **y en paralelo calculando las métricas estadísticas**.
 4. Permite la edición en vivo vía `PATCH` HTTP del estado a (En Revisión, Aceptada, Borrada), desencadenado en una recarga reactiva de los conteos.
 
+### Accesibilidad Web - OpenDyslexic Font Toggle
+
+Siguiendo estándares **WCAG 2.1 Level A**, el Frontend incluye soporte nativo para la fuente **OpenDyslexic**, una tipografía especializada que mejora la legibilidad para personas con dislexia.
+
+**Componentes implicados:**
+*   `Header.jsx`: Botón de accesibilidad (icono ♿) junto al toggle de tema. Al hacer click, alterna la clase `.dyslexic-mode` en el `document.documentElement`.
+*   `index.css`: Define `@font-face` para las 3 variantes de OpenDyslexic (Regular, Bold, Italic) servidas localmente desde `/public/fonts/` (~900 KB).
+*   `App.jsx`: Restaura la preferencia de usuario desde `localStorage` al cargar la aplicación, asegurando persistencia entre sesiones.
+
+**Características técnicas:**
+1. **Almacenamiento local**: Fuentes WOFF2 descargadas una sola vez (caché de navegador)
+2. **CSS Variables**: La clase `.dyslexic-mode` cambia `--font-body` y `--font-heading` a OpenDyslexic
+3. **localStorage**: Clave `dyslexic-mode` = `true|false` persiste la preferencia del usuario
+4. **Sin impacto de performance**: Fuentes caché + toggle instantáneo
+5. **Compatible con todos los temas**: Funciona tanto en modo claro como oscuro
+
+**Flujo de usuario:**
+1. Usuario ve botón ♿ en Header (icono cambio a magenta cuando está activo)
+2. Click activa clase `.dyslexic-mode` + guarda en localStorage
+3. Todos los textos (body + headings) usan OpenDyslexic instantáneamente
+4. Al recargar, la preferencia se restaura automáticamente
+5. Totalmente accesible via teclado (Tab + Enter)
+
 ---
 
 ## 4. Radiografía del Backend (API / Logic Layer)
