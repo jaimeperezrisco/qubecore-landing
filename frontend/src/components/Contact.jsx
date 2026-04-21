@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { Mail, User, Building, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, User, Building, Phone, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 // Mapeo de interés → servicioId (coincide con el orden en la BD)
 const INTEREST_MAP = {
@@ -21,6 +21,7 @@ const Contact = () => {
     name: '',
     company: '',
     email: '',
+    telefono: '',
     interest: 'hardware',
     message: '',
   });
@@ -47,7 +48,7 @@ const Contact = () => {
           nombre: formData.name,
           email: formData.email,
           empresa: formData.company,
-          telefono: null,
+          telefono: formData.telefono || null,
           mensaje: formData.message,
           servicioId: INTEREST_MAP[formData.interest] || null,
         })
@@ -73,6 +74,7 @@ const Contact = () => {
         name: '',
         company: '',
         email: '',
+        telefono: '',
         interest: 'hardware',
         message: '',
       });
@@ -218,6 +220,26 @@ const Contact = () => {
                          focus:outline-none focus:border-[var(--accent-cyan)] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="John@qubecore.com"
+              />
+            </div>
+
+            {/* Teléfono */}
+            <div>
+              <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                <Phone size={18} className="text-[var(--accent-cyan)]" />
+                Phone (optional)
+              </label>
+              <input
+                type="tel"
+                name="telefono"
+                value={formData.telefono}
+                onChange={handleChange}
+                disabled={formStatus.loading}
+                className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
+                         bg-[var(--glass-bg)] text-[var(--text-primary)] 
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="+34 612 345 678"
               />
             </div>
 

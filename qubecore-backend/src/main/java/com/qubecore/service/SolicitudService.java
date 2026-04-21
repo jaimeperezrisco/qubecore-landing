@@ -79,7 +79,7 @@ public class SolicitudService {
         String nombreServicio = s.getServicio() != null ? s.getServicio().getNombre() : null;
         String notas = esAdmin ? s.getNotasInternas() : null;
         return new SolicitudResponse(s.getId(), s.getNombre(), s.getEmail(),
-                s.getEmpresa(), s.getMensaje(), nombreServicio,
+                s.getEmpresa(), s.getTelefono(), s.getMensaje(), nombreServicio,
                 s.getEstado().name(), s.getCreadaEn(), notas);
     }
 }

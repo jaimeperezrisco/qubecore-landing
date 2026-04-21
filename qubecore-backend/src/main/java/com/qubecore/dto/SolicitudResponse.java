@@ -12,6 +12,7 @@ public class SolicitudResponse {
     private String nombre;
     private String email;
     private String empresa;
+    private String telefono;
     private String mensaje;
     private String servicio;
     private String estado;
