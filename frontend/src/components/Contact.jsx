@@ -278,10 +278,12 @@ const Contact = () => {
                 value={formData.message}
                 onChange={handleChange}
                 rows="5"
+                maxLength={2000}
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all resize-none
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         resize-y min-h-[120px]
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Tell us about your quantum computing needs..."
               />

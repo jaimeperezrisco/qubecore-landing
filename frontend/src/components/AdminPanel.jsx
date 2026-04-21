@@ -244,8 +244,8 @@ const AdminPanel = () => {
                       <td className="p-4 align-top">
                         <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.servicio || 'N/A'}</span>
                       </td>
-                      <td className="p-4 align-top max-w-xs">
-                        <p className="truncate hover:text-clip hover:overflow-visible hover:whitespace-normal transition-all text-gray-300">
+                      <td className="p-4 align-top min-w-[200px] max-w-xs">
+                        <p className="text-gray-300 text-sm line-clamp-3 hover:line-clamp-none transition-all">
                           {sol.mensaje}
                         </p>
                       </td>
