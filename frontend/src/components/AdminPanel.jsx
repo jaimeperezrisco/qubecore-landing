@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Lock, LogOut, CheckCircle, Clock, XCircle, ChevronDown, ListFilter, Trash2 } from 'lucide-react';
+import { Lock, LogOut, CheckCircle, Clock, XCircle, ListFilter, Trash2 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -50,6 +49,8 @@ const AdminPanel = () => {
   };
 
   const loadDashboardData = async () => {
+    if (!token) return;
+    
     try {
       console.log('Fetching dashboard data...');
       let url = `${API_URL}/api/admin/solicitudes`;
@@ -117,11 +118,7 @@ const AdminPanel = () => {
   if (!token) {
     return (
       <div className="min-h-screen bg-[#070b14] text-white flex items-center justify-center p-4">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-card p-8 w-full max-w-md border border-[var(--accent-cyan)]/30 relative"
-        >
+        <div className="glass-card p-8 w-full max-w-md border border-[var(--accent-cyan)]/30 relative">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent-cyan)] to-purple-500 rounded-t-xl" />
           <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
             <Lock className="text-[var(--accent-cyan)]" /> Admin Login
@@ -162,7 +159,7 @@ const AdminPanel = () => {
               Return to Website
             </a>
           </form>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -219,6 +216,7 @@ const AdminPanel = () => {
                 <tr>
                   <th className="p-4 font-medium">Contact</th>
                   <th className="p-4 font-medium">Company</th>
+                  <th className="p-4 font-medium">Phone</th>
                   <th className="p-4 font-medium">Interest Area</th>
                   <th className="p-4 font-medium">Message</th>
                   <th className="p-4 font-medium">Status / Actions</th>
@@ -228,7 +226,7 @@ const AdminPanel = () => {
               <tbody>
                 {solicitudes.length === 0 ? (
                   <tr>
-                    <td colSpan="5" className="p-8 text-center text-gray-500 italic">No incoming requests found.</td>
+                    <td colSpan="7" className="p-8 text-center text-gray-500 italic">No incoming requests found.</td>
                   </tr>
                 ) : (
                   solicitudes.map(sol => (
@@ -239,6 +237,9 @@ const AdminPanel = () => {
                       </td>
                       <td className="p-4 align-top">
                         <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.empresa || 'N/A'}</span>
+                      </td>
+                      <td className="p-4 align-top">
+                        <span className="text-gray-400 text-xs">{sol.telefono || '-'}</span>
                       </td>
                       <td className="p-4 align-top">
                         <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.servicio || 'N/A'}</span>
