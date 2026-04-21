@@ -35,7 +35,7 @@ public class QubeCoreBackendApplication {
                 admin.setActivo(true);
                 admin.setCreadoEn(LocalDateTime.now());
                 usuarioRepository.save(admin);
-                System.out.println("✅ Usuario admin auto-generado con éxito.");
+                System.out.println("Usuario admin auto-generado con éxito.");
             }
 
             // Generar servicios base si no existen
