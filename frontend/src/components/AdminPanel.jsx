@@ -219,6 +219,7 @@ const AdminPanel = () => {
                 <tr>
                   <th className="p-4 font-medium">Contact</th>
                   <th className="p-4 font-medium">Company</th>
+                  <th className="p-4 font-medium">Interest Area</th>
                   <th className="p-4 font-medium">Message</th>
                   <th className="p-4 font-medium">Status / Actions</th>
                   <th className="p-4 font-medium">Date</th>
@@ -238,6 +239,9 @@ const AdminPanel = () => {
                       </td>
                       <td className="p-4 align-top">
                         <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.empresa || 'N/A'}</span>
+                      </td>
+                      <td className="p-4 align-top">
+                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.servicio || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top max-w-xs">
                         <p className="truncate hover:text-clip hover:overflow-visible hover:whitespace-normal transition-all text-gray-300">

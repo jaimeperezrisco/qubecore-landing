@@ -58,7 +58,7 @@ const Contact = () => {
         throw new Error(errorData.error || 'Error enviando solicitud');
       }
 
-      console.log('✅ Request created successfully');
+      console.log('Request created successfully');
 
       // Success state
       setFormStatus({
@@ -83,7 +83,7 @@ const Contact = () => {
       }, 5000);
 
     } catch (error) {
-      console.error('❌ Request Error:', error);
+      console.error('Request Error:', error);
       
       // Error state
       setFormStatus({

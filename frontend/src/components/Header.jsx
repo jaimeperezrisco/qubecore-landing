@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Menu, X } from 'lucide-react';
+import { Sun, Moon, Menu, X, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoSinFondo from '../assets/logos/logo-sf.png';
 
@@ -94,6 +94,15 @@ const Header = () => {
               )}
             </motion.div>
           </button>
+
+          {/* Admin Login */}
+          <a
+            href="/admin"
+            className="p-2 rounded-full glass-card hover:glow transition-all"
+            aria-label="Admin Login"
+          >
+            <Lock size={20} className="text-[var(--accent-cyan)]" />
+          </a>
 
           {/* Hamburger Menu - Mobile */}
           <button

@@ -2,7 +2,6 @@ import Header from './components/Header';
 import ParticlesBackground from './components/ParticlesBackground';
 import Hero from './components/Hero';
 import ProblemSolution from './components/ProblemSolution';
-import Scalability from './components/Scalability';
 import Offer from './components/Offer';
 import WhyUs from './components/WhyUs';
 import HardwareDeepDive from './components/HardwareDeepDive';
@@ -38,7 +37,6 @@ function App() {
       <main className="relative z-10">
         <Hero />
         <ProblemSolution />
-        <Scalability />
         <Offer />
         <WhyUs />
         <HardwareDeepDive />
