@@ -1,28 +1,20 @@
 # ===================================
-# QubeCore Frontend - Dockerfile
+# QubeCore Frontend - Dockerfile (Local Dev)
 # ===================================
 
-# -- Stage 1: Build Frontend (Vite) --
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
 WORKDIR /app
 
 # Instalar dependencias
 COPY package*.json ./
 RUN npm install
 
-# Copiar el código fuente
+# Copiar código fuente
 COPY . .
 
-# Construir para producción (se generarán los estáticos en /app/dist)
-# Nota: Como el front y el back estarán en el mismo dominio bajo Nginx,
-# el front hará las peticiones a /api automáticamente si VITE_API_URL no se especifica.
-RUN VITE_API_URL="" npm run build
+# Puerto de Vite
+EXPOSE 5173
 
-# -- Stage 2: Serve Nginx --
-FROM nginx:alpine
-
-# Copiamos la build de Vite a la carpeta pública de Nginx
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Exponer puerto 80 (aunque el docker-compose mapeará puertos/volúmenes y reescribirá la conf)
-EXPOSE 80
+# CMD por defecto
+CMD ["npm", "run", "dev", "--", "--host"]

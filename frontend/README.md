@@ -1,5 +1,15 @@
 # 🚀 QubeCore Landing Page - Documentación Completa
 
+dist (distribution) es la carpeta de salida del build de producción. Cuando ejecutas npm run build, Vite compila y optimiza el código y lo guarda ahí.
+
+Contiene:
+- Archivos JavaScript minificados
+- CSS compilado
+- HTML optimizado
+- Assets estáticos
+
+Esta carpeta es lo que se despliega al servidor de producción (no debe ir a git).
+
 <div align="center">
 
 ![QubeCore](https://img.shields.io/badge/QubeCore-Quantum_Computing-00F0FF?style=for-the-badge)
