@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Sun, Moon, Menu, X, Lock } from 'lucide-react';
+import { Sun, Moon, Menu, X, Lock, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import logoSinFondo from '../assets/logos/logo-sf.png';
 
-const Header = () => {
-  const [isDark, setIsDark] = useState(true);
+const Header = ({
+  isDark,
+  onToggleTheme,
+  isColorblindMode,
+  onToggleColorblindMode,
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    document.documentElement.classList.add('dark');
-
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
@@ -29,11 +31,6 @@ const Header = () => {
       document.body.style.overflow = '';
     };
   }, [isMobileMenuOpen]);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-    document.documentElement.classList.toggle('dark');
-  };
 
   const navItems = [
     { name: 'Home', href: '#hero' },
@@ -78,7 +75,7 @@ const Header = () => {
         <div className="flex items-center space-x-2">
           {/* Theme Toggle */}
           <button
-            onClick={toggleTheme}
+            onClick={onToggleTheme}
             className="p-2 rounded-full glass-card hover:glow transition-all"
             aria-label="Toggle theme"
           >
@@ -93,6 +90,18 @@ const Header = () => {
                 <Moon size={20} className="text-[var(--accent-cyan)]" />
               )}
             </motion.div>
+          </button>
+
+          <button
+            onClick={onToggleColorblindMode}
+            className={`p-2 rounded-full glass-card transition-all ${
+              isColorblindMode ? 'glow' : 'hover:glow'
+            }`}
+            aria-label="Toggle colorblind-friendly palette"
+            aria-pressed={isColorblindMode}
+            title={isColorblindMode ? 'Colorblind mode enabled' : 'Enable colorblind mode'}
+          >
+            <Eye size={20} className="text-[var(--accent-cyan)]" />
           </button>
 
           {/* Admin Login */}

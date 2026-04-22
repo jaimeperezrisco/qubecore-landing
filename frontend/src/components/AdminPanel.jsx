@@ -119,7 +119,7 @@ const AdminPanel = () => {
     return (
       <div className="min-h-screen bg-[#070b14] text-white flex items-center justify-center p-4">
         <div className="glass-card p-8 w-full max-w-md border border-[var(--accent-cyan)]/30 relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent-cyan)] to-purple-500 rounded-t-xl" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-magenta)] rounded-t-xl" />
           <h2 className="text-3xl font-bold mb-2 flex items-center gap-3">
             <Lock className="text-[var(--accent-cyan)]" /> Admin Login
           </h2>
@@ -171,7 +171,7 @@ const AdminPanel = () => {
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-cyan)] to-purple-400">
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[var(--accent-cyan)] to-[var(--accent-magenta)]">
               QubeCore Command Center
             </h1>
             <p className="text-[var(--text-secondary)] text-sm">Managing quantum computing inquiries</p>

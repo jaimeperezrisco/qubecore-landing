@@ -10,8 +10,20 @@ import Contact from './components/Contact';
 import AdminPanel from './components/AdminPanel';
 import { useState, useEffect } from 'react';
 
+const STORAGE_KEYS = {
+  theme: 'qubecore-theme',
+  colorMode: 'qubecore-color-mode',
+};
+
 function App() {
   const [isAdminRoute, setIsAdminRoute] = useState(window.location.pathname.startsWith('/admin'));
+  const [isDark, setIsDark] = useState(() => {
+    const savedTheme = window.localStorage.getItem(STORAGE_KEYS.theme);
+    return savedTheme ? savedTheme === 'dark' : true;
+  });
+  const [isColorblindMode, setIsColorblindMode] = useState(() => {
+    return window.localStorage.getItem(STORAGE_KEYS.colorMode) === 'colorblind';
+  });
 
   useEffect(() => {
     const handleLocationChange = () => {
@@ -20,6 +32,19 @@ function App() {
     window.addEventListener('popstate', handleLocationChange);
     return () => window.removeEventListener('popstate', handleLocationChange);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', isDark);
+    window.localStorage.setItem(STORAGE_KEYS.theme, isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  useEffect(() => {
+    document.documentElement.dataset.colorMode = isColorblindMode ? 'colorblind' : 'default';
+    window.localStorage.setItem(
+      STORAGE_KEYS.colorMode,
+      isColorblindMode ? 'colorblind' : 'default'
+    );
+  }, [isColorblindMode]);
 
   if (isAdminRoute) {
     return <AdminPanel />;
@@ -31,7 +56,12 @@ function App() {
       <ParticlesBackground />
       
       {/* Header - Fixed navigation */}
-      <Header />
+      <Header
+        isDark={isDark}
+        onToggleTheme={() => setIsDark((current) => !current)}
+        isColorblindMode={isColorblindMode}
+        onToggleColorblindMode={() => setIsColorblindMode((current) => !current)}
+      />
 
       {/* Main Content */}
       <main className="relative z-10">
@@ -40,7 +70,7 @@ function App() {
         <Offer />
         <WhyUs />
         <HardwareDeepDive />
-        <Team />
+        <Team isColorblindMode={isColorblindMode} />
         <Contact />
       </main>
 

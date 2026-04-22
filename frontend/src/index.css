@@ -27,6 +27,13 @@
     --particle-color: #0099CC;
   }
 
+  :root[data-color-mode='colorblind'] {
+    --accent-cyan: #0F62FE;
+    --accent-magenta: #FF7A00;
+    --glass-shadow: rgba(15, 98, 254, 0.1);
+    --particle-color: #0F62FE;
+  }
+
   .dark {
     /* Modo Oscuro (Predeterminado) */
     --bg-primary: #0A0F1A;
@@ -39,6 +46,13 @@
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: rgba(0, 240, 255, 0.05);
     --particle-color: #00F0FF;
+  }
+
+  .dark[data-color-mode='colorblind'] {
+    --accent-cyan: #78A9FF;
+    --accent-magenta: #FFB366;
+    --glass-shadow: rgba(120, 169, 255, 0.08);
+    --particle-color: #78A9FF;
   }
 
   body {
