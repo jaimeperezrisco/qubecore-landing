@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Entornos
+.env
+.env.local
+.env.*.local
+
+# Build (se genera con npm run build)
+dist/
+build/
+
+# Test
+coverage/

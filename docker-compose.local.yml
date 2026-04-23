@@ -1,0 +1,56 @@
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: qubecore-mysql-local
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: qubecoreroot
+      MYSQL_DATABASE: qubecore
+      MYSQL_USER: qubecore_user
+      MYSQL_PASSWORD: qubecorepass
+    # Si ya tuvieras un MySQL corriendo en tu equipo (cosa frecuente), 
+    # cambiamos el puerto al 3307 exterior para asegurar que no falle por conflicto.
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data_local:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - qubecore-local-network
+    healthcheck:
+      # Modificado el healthcheck para que sea robusto en tu local y no tire el error "unhealthy"
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -pqubecoreroot || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  backend:
+    build:
+      context: ./qubecore-backend
+      dockerfile: Dockerfile
+    container_name: qubecore-backend-local
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: qubecore
+      DB_USER: qubecore_user
+      DB_PASSWORD: qubecorepass
+      JWT_SECRET: TuClaveSecretaSuperLargaDeAlMenos64CaracteresParaHS512QubeCore2024!!
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - qubecore-local-network
+
+volumes:
+  mysql_data_local:
+
+networks:
+  qubecore-local-network:
+    driver: bridge
