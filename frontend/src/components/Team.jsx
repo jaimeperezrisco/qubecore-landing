@@ -19,7 +19,7 @@ const Team = ({ isColorblindMode }) => {
       role: 'Founder & Chief Quantum Scientist',
       specialty: 'Superconducting qubit design',
       initials: 'GT',
-      color: 'from-purple-500 to-pink-600',
+      color: 'from-violet-500 to-yellow-400',
       colorblind: 'from-amber-500 to-orange-600',
     },
     {
@@ -42,7 +42,13 @@ const Team = ({ isColorblindMode }) => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Meet the <span className="text-gradient">Minds</span> Behind QubeCore
+            Meet the <span className="text-gradient">Minds</span> Behind{' '}
+            <span>
+              <span className="text-[var(--accent-gold)]">Q</span>
+              <span className="text-gradient">ube</span>
+              <span className="text-[var(--accent-gold)]">C</span>
+              <span className="text-gradient">ore</span>
+            </span>
           </h2>
           <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto">
             A team of world-class quantum experts dedicated to democratizing quantum computing

@@ -11,6 +11,9 @@ const HardwareDeepDive = () => {
       number: '01',
       icon: Search,
       title: 'Problem Assessment',
+      accentClass: 'text-[var(--accent-magenta)]',
+      borderClass: 'border-[var(--accent-magenta)]',
+      bgClass: 'bg-[var(--accent-magenta)]',
       description: 'Our quantum advisors analyze your computational challenges and identify quantum-suitable problems.',
       details: [
         'In-depth workload analysis',
@@ -22,6 +25,9 @@ const HardwareDeepDive = () => {
       number: '02',
       icon: Lightbulb,
       title: 'Custom Algorithm Design',
+      accentClass: 'text-[var(--accent-gold)]',
+      borderClass: 'border-[var(--accent-gold)]',
+      bgClass: 'bg-[var(--accent-gold)]',
       description: 'We develop quantum algorithms specifically tailored to your use case and optimization goals.',
       details: [
         'Bespoke quantum circuits',
@@ -33,6 +39,9 @@ const HardwareDeepDive = () => {
       number: '03',
       icon: Cpu,
       title: 'Hardware Matching',
+      accentClass: 'text-[var(--accent-magenta)]',
+      borderClass: 'border-[var(--accent-magenta)]',
+      bgClass: 'bg-[var(--accent-magenta)]',
       description: 'Based on your requirements, we design and provision the optimal quantum infrastructure.',
       details: [
         'Custom qubit topology',
@@ -96,13 +105,13 @@ const HardwareDeepDive = () => {
                   }`}
                 >
                   {/* Content Card */}
-                  <div className="flex-1 glass-card md:max-w-md group hover:border-[var(--accent-cyan)] transition-all">
+                  <div className={`flex-1 glass-card md:max-w-md group transition-all ${step.borderClass}`}>
                     <div className="flex items-center gap-4 mb-4">
                       <span className="text-5xl font-bold text-gradient opacity-30">
                         {step.number}
                       </span>
                       <div className="p-3 rounded-xl glass group-hover:glow transition-all">
-                        <Icon size={28} className="text-[var(--accent-cyan)]" />
+                        <Icon size={28} className={step.accentClass} />
                       </div>
                     </div>
                     
@@ -112,9 +121,9 @@ const HardwareDeepDive = () => {
                     </p>
 
                     <ul className="space-y-2">
-                      {step.details.map((detail, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                          <ArrowRight size={16} className="text-[var(--accent-cyan)]" />
+                        {step.details.map((detail, idx) => (
+                          <li key={idx} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+                          <ArrowRight size={16} className={step.accentClass} />
                           <span>{detail}</span>
                         </li>
                       ))}
@@ -127,7 +136,7 @@ const HardwareDeepDive = () => {
                       initial={{ scale: 0 }}
                       animate={isInView ? { scale: 1 } : {}}
                       transition={{ duration: 0.5, delay: index * 0.3 + 0.2 }}
-                      className="w-16 h-16 rounded-full glass flex items-center justify-center border-2 border-[var(--accent-cyan)]"
+                      className={`w-16 h-16 rounded-full glass flex items-center justify-center border-2 ${step.borderClass}`}
                     >
                       <motion.div
                         animate={{
@@ -139,9 +148,9 @@ const HardwareDeepDive = () => {
                           repeat: Infinity,
                           delay: index * 0.5,
                         }}
-                        className="w-10 h-10 rounded-full bg-[var(--accent-cyan)] opacity-30"
+                        className={`w-10 h-10 rounded-full opacity-30 ${step.bgClass}`}
                       />
-                      <div className="absolute w-4 h-4 rounded-full bg-[var(--accent-cyan)]" />
+                      <div className={`absolute w-4 h-4 rounded-full ${step.bgClass}`} />
                     </motion.div>
                   </div>
 

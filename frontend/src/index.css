@@ -21,6 +21,7 @@
     --text-secondary: #4A5568;
     --accent-cyan: #0099CC;
     --accent-magenta: #8B1FA8;
+    --accent-gold: #FFD600;
     --glass-bg: rgba(0, 0, 0, 0.05);
     --glass-border: rgba(0, 0, 0, 0.1);
     --glass-shadow: rgba(0, 153, 204, 0.08);
@@ -30,6 +31,7 @@
   :root[data-color-mode='colorblind'] {
     --accent-cyan: #0F62FE;
     --accent-magenta: #FF7A00;
+    --accent-gold: #FFD166;
     --glass-shadow: rgba(15, 98, 254, 0.1);
     --particle-color: #0F62FE;
   }
@@ -42,6 +44,7 @@
     --text-secondary: #A0AEC0;
     --accent-cyan: #00F0FF;
     --accent-magenta: #B026FF;
+    --accent-gold: #FFD600;
     --glass-bg: rgba(255, 255, 255, 0.05);
     --glass-border: rgba(255, 255, 255, 0.1);
     --glass-shadow: rgba(0, 240, 255, 0.05);
@@ -51,6 +54,7 @@
   .dark[data-color-mode='colorblind'] {
     --accent-cyan: #78A9FF;
     --accent-magenta: #FFB366;
+    --accent-gold: #FFE08A;
     --glass-shadow: rgba(120, 169, 255, 0.08);
     --particle-color: #78A9FF;
   }

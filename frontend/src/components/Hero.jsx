@@ -18,7 +18,12 @@ const Hero = () => {
             className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
           >
             Unlock the{' '}
-            <span className="text-gradient">Quantum Advantage</span>
+            <span>
+              <span className="text-[var(--accent-gold)]">Q</span>
+              <span className="text-gradient">uantum </span>
+              <span className="text-[var(--accent-gold)]">A</span>
+              <span className="text-gradient">dvantage</span>
+            </span>
           </motion.h1>
 
           <motion.p
@@ -58,7 +63,7 @@ const Hero = () => {
               animate={{ y: [0, 10, 0] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              <ChevronDown size={32} className="text-[var(--accent-cyan)]" />
+              <ChevronDown size={32} className="text-[var(--accent-magenta)]" />
             </motion.div>
           </a>
         </motion.div>

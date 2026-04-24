@@ -18,6 +18,7 @@ const Offer = () => {
         'Seamless cloud integration',
       ],
       highlight: true,
+      featureAccent: 'text-[var(--accent-gold)]',
     },
     {
       icon: GraduationCap,
@@ -30,6 +31,7 @@ const Offer = () => {
         'Ongoing learning resources',
       ],
       highlight: false,
+      featureAccent: 'text-[var(--accent-cyan)]',
     },
     {
       icon: Headphones,
@@ -42,6 +44,7 @@ const Offer = () => {
         '24/7 technical assistance',
       ],
       highlight: false,
+      featureAccent: 'text-[var(--accent-cyan)]',
     },
   ];
 
@@ -55,7 +58,13 @@ const Offer = () => {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Our <span className="text-gradient">Quantum Solutions</span>
+            Our{' '}
+            <span>
+              <span className="text-[var(--accent-gold)]">Q</span>
+              <span className="text-gradient">uantum </span>
+              <span className="text-[var(--accent-gold)]">S</span>
+              <span className="text-gradient">olutions</span>
+            </span>
           </h2>
           <p className="text-xl text-[var(--text-secondary)] max-w-3xl mx-auto">
             End-to-end quantum computing services designed to transform your business
@@ -79,7 +88,7 @@ const Offer = () => {
                 <div className="mb-6">
                   <div className={`inline-flex p-4 rounded-2xl ${
                     offer.highlight 
-                      ? 'bg-gradient-to-br from-[var(--accent-cyan)] to-[var(--accent-magenta)]' 
+                      ? 'bg-gradient-to-br from-[var(--accent-magenta)] to-[var(--accent-gold)]' 
                       : 'glass'
                   }`}>
                     <Icon size={32} className="text-white" />
@@ -98,7 +107,7 @@ const Offer = () => {
                 <ul className="space-y-3 mb-6">
                   {offer.features.map((feature, idx) => (
                     <li key={idx} className="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
-                      <span className="text-[var(--accent-cyan)]">✓</span>
+                      <span className={offer.featureAccent}>✓</span>
                       <span>{feature}</span>
                     </li>
                   ))}

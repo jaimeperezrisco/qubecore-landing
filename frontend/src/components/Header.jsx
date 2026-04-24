@@ -101,7 +101,7 @@ const Header = ({
             aria-pressed={isColorblindMode}
             title={isColorblindMode ? 'Colorblind mode enabled' : 'Enable colorblind mode'}
           >
-            <Eye size={20} className="text-[var(--accent-cyan)]" />
+            <Eye size={20} className="text-[var(--accent-magenta)]" />
           </button>
 
           {/* Admin Login */}
@@ -110,7 +110,7 @@ const Header = ({
             className="p-2 rounded-full glass-card hover:glow transition-all"
             aria-label="Admin Login"
           >
-            <Lock size={20} className="text-[var(--accent-cyan)]" />
+            <Lock size={20} className="text-[var(--accent-gold)]" />
           </a>
 
           {/* Hamburger Menu - Mobile */}

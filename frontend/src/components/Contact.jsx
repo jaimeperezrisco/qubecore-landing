@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { Mail, User, Building, Phone, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { Mail, User, Building, Phone, MessageSquare, Send, CheckCircle, AlertCircle, Loader2, ListFilter } from 'lucide-react';
 
 // Mapeo de interés → servicioId (coincide con el orden en la BD)
 const INTEREST_MAP = {
@@ -184,7 +184,7 @@ const Contact = () => {
             {/* Company */}
             <div>
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <Building size={18} className="text-[var(--accent-cyan)]" />
+                <Building size={18} className="text-[var(--accent-gold)]" />
                 Company / Organization
               </label>
               <input
@@ -196,7 +196,7 @@ const Contact = () => {
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         focus:outline-none focus:border-[var(--accent-gold)] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="QubeCore"
               />
@@ -205,7 +205,7 @@ const Contact = () => {
             {/* Email */}
             <div>
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <Mail size={18} className="text-[var(--accent-cyan)]" />
+                <Mail size={18} className="text-[var(--accent-magenta)]" />
                 Email Address
               </label>
               <input
@@ -226,7 +226,7 @@ const Contact = () => {
             {/* Teléfono */}
             <div>
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <Phone size={18} className="text-[var(--accent-cyan)]" />
+                <Phone size={18} className="text-[var(--accent-gold)]" />
                 Phone (optional)
               </label>
               <input
@@ -245,7 +245,8 @@ const Contact = () => {
 
             {/* Interest */}
             <div>
-              <label className="block text-sm font-semibold mb-2">
+              <label className="block text-sm font-semibold mb-2 flex items-center gap-2 text-[var(--text-primary)]">
+                <ListFilter size={18} className="text-[var(--accent-cyan)]" />
                 Area of Interest
               </label>
               <select
@@ -255,7 +256,7 @@ const Contact = () => {
                 disabled={formStatus.loading}
                 className="contact-select w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         focus:outline-none focus:border-[var(--accent-magenta)] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="hardware">Quantum Hardware Access</option>
@@ -270,7 +271,7 @@ const Contact = () => {
             {/* Message */}
             <div>
               <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                <MessageSquare size={18} className="text-[var(--accent-cyan)]" />
+                <MessageSquare size={18} className="text-[var(--accent-magenta)]" />
                 Message
               </label>
               <textarea
@@ -282,7 +283,7 @@ const Contact = () => {
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         focus:outline-none focus:border-[var(--accent-gold)] transition-all
                          resize-y min-h-[120px]
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Tell us about your quantum computing needs..."
@@ -302,12 +303,12 @@ const Contact = () => {
                   <Loader2 size={20} className="animate-spin" />
                   Sending...
                 </>
-              ) : (
-                <>
-                  <Send size={20} />
-                  Send Message
-                </>
-              )}
+                ) : (
+                  <>
+                    <Send size={20} className="text-[var(--accent-gold)]" />
+                    Send Message
+                  </>
+                )}
             </motion.button>
           </form>
 
