@@ -2,6 +2,86 @@ import { useState, useEffect } from 'react';
 import { Lock, LogOut, CheckCircle, Clock, XCircle, ListFilter, Trash2 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const EMPTY_STATS = {
+  PENDING: 0,
+  IN_REVIEW: 0,
+  ACCEPTED: 0,
+  REJECTED: 0,
+  CLOSED: 0,
+};
+
+const STATUS_ALIASES = {
+  PENDING: ['PENDING', 'PENDIENTE'],
+  IN_REVIEW: ['IN_REVIEW', 'EN_REVISION'],
+  ACCEPTED: ['ACCEPTED', 'ACEPTED', 'ACEPTADA'],
+  REJECTED: ['REJECTED', 'RECHAZADA'],
+  CLOSED: ['CLOSED', 'CERRADA'],
+};
+
+const STATUS_NORMALIZATION = Object.entries(STATUS_ALIASES).reduce((acc, [englishStatus, aliases]) => {
+  aliases.forEach((alias) => {
+    acc[alias] = englishStatus;
+  });
+  return acc;
+}, {});
+
+const readJsonSafely = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeStatus = (status) => STATUS_NORMALIZATION[status] || status;
+
+const normalizeRequest = (request) => ({
+  id: request.id,
+  name: request.name || request.nombre || '',
+  email: request.email || '',
+  company: request.company ?? request.empresa ?? '',
+  phone: request.phone ?? request.telefono ?? '',
+  service: request.service ?? request.servicio ?? '',
+  message: request.message ?? request.mensaje ?? '',
+  status: normalizeStatus(request.status || request.estado || 'PENDING'),
+  createdAt: request.createdAt || request.creadaEn || null,
+  internalNotes: request.internalNotes ?? request.notasInternas ?? null,
+});
+
+const normalizeStats = (statsData) => {
+  const nextStats = { ...EMPTY_STATS };
+
+  if (!statsData || typeof statsData !== 'object') {
+    return nextStats;
+  }
+
+  Object.entries(statsData).forEach(([key, value]) => {
+    const normalizedKey = normalizeStatus(key);
+    if (normalizedKey in nextStats) {
+      nextStats[normalizedKey] = value;
+    }
+  });
+
+  return nextStats;
+};
+
+const buildStatsFromRequests = (requests) => {
+  const nextStats = { ...EMPTY_STATS };
+
+  requests.forEach((request) => {
+    if (request.status in nextStats) {
+      nextStats[request.status] += 1;
+    }
+  });
+
+  return nextStats;
+};
 
 const AdminPanel = () => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -52,25 +132,40 @@ const AdminPanel = () => {
     if (!token) return;
     
     try {
-      console.log('Fetching dashboard data...');
-let url = `${API_URL}/api/admin/solicitudes`;
-       if (filter !== 'ALL') url += `?status=${filter}`;
+      const headers = { Authorization: `Bearer ${token}` };
+      const filterCandidates = filter === 'ALL' ? [null] : (STATUS_ALIASES[filter] || [filter]);
+      let solRes = null;
 
-       const [solRes, statsRes] = await Promise.all([
-         fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }),
-         fetch(`${API_URL}/api/admin/solicitudes/statistics`, { headers: { 'Authorization': `Bearer ${token}` } })
-      ]);
+      for (const candidate of filterCandidates) {
+        const url = candidate
+          ? `${API_URL}/api/admin/solicitudes?status=${encodeURIComponent(candidate)}`
+          : `${API_URL}/api/admin/solicitudes`;
 
-      if (solRes.status === 401 || solRes.status === 403) {
-        handleLogout();
-        return;
+        const response = await fetch(url, { headers });
+
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          return;
+        }
+
+        if (response.ok) {
+          solRes = response;
+          break;
+        }
       }
 
-      const solData = await solRes.json();
-      const statsData = await statsRes.json();
+      if (!solRes) {
+        throw new Error('Unable to load requests');
+      }
+
+      const statsRes = await fetch(`${API_URL}/api/admin/solicitudes/statistics`, { headers });
+
+      const solData = await readJsonSafely(solRes);
+      const normalizedRequests = Array.isArray(solData) ? solData.map(normalizeRequest) : [];
+      const statsData = statsRes.ok ? await readJsonSafely(statsRes) : null;
       
-      setSolicitudes(solData);
-      setStats(statsData);
+      setSolicitudes(normalizedRequests);
+      setStats(statsData ? normalizeStats(statsData) : buildStatsFromRequests(normalizedRequests));
     } catch (err) {
       console.error('Error fetching dashboard:', err);
     }
@@ -78,12 +173,18 @@ let url = `${API_URL}/api/admin/solicitudes`;
 
   const changeStatus = async (id, newStatus) => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}/status?status=${newStatus}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        loadDashboardData();
+      const candidates = STATUS_ALIASES[newStatus] || [newStatus];
+
+      for (const candidate of candidates) {
+        const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}/status?status=${encodeURIComponent(candidate)}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          loadDashboardData();
+          return;
+        }
       }
     } catch (err) {
       console.error('Error updating status', err);
@@ -95,7 +196,7 @@ let url = `${API_URL}/api/admin/solicitudes`;
     try {
       const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         loadDashboardData();
@@ -270,7 +371,7 @@ let url = `${API_URL}/api/admin/solicitudes`;
                         </div>
                       </td>
                       <td className="p-4 align-top whitespace-nowrap text-xs text-gray-500">
-                        {new Date(sol.createdAt).toLocaleDateString()}
+                        {sol.createdAt ? new Date(sol.createdAt).toLocaleDateString() : '-'}
                       </td>
                     </tr>
                   ))
