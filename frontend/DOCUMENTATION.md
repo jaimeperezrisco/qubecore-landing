@@ -1,4 +1,4 @@
-# Documentación del Frontend QubeCore
+ # Documentación del Frontend QubeCore
 
 ## 1. Visión General
 
@@ -530,7 +530,7 @@ Framer Motion es una librería de animaciones para React. Permite crear animacio
 | **GSAP** | Potente pero más pesado; licencia para komersial |
 | **Anime.js** | No específico de React |
 | **React Spring** | API más compleja; menos documentación |
-| **Motion One** | Más ligero pero menos功能 completa |
+| **Motion One** | Más ligero pero menos completa |
 | **Vanilla CSS + JS** | Más código; menos maintainable |
 
 **¿Por qué se usa?**
