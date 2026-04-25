@@ -83,6 +83,41 @@ const buildStatsFromRequests = (requests) => {
   return nextStats;
 };
 
+const buildListUrls = (filter) => {
+  const baseUrl = `${API_URL}/api/admin/solicitudes`;
+
+  if (filter === 'ALL') {
+    return [baseUrl];
+  }
+
+  const statuses = STATUS_ALIASES[filter] || [filter];
+  const urls = [];
+
+  statuses.forEach((status) => {
+    urls.push(`${baseUrl}?status=${encodeURIComponent(status)}`);
+    urls.push(`${baseUrl}?estado=${encodeURIComponent(status)}`);
+  });
+
+  return [...new Set(urls)];
+};
+
+const buildStatusUpdateUrls = (id, nextStatus) => {
+  const statuses = STATUS_ALIASES[nextStatus] || [nextStatus];
+  const urls = [];
+
+  statuses.forEach((status) => {
+    urls.push(`${API_URL}/api/admin/solicitudes/${id}/status?status=${encodeURIComponent(status)}`);
+    urls.push(`${API_URL}/api/admin/solicitudes/${id}/estado?estado=${encodeURIComponent(status)}`);
+  });
+
+  return [...new Set(urls)];
+};
+
+const buildStatsUrls = () => ([
+  `${API_URL}/api/admin/solicitudes/statistics`,
+  `${API_URL}/api/admin/solicitudes/estadisticas`,
+]);
+
 const AdminPanel = () => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [email, setEmail] = useState('');
@@ -91,6 +126,8 @@ const AdminPanel = () => {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [statusActionsAvailable, setStatusActionsAvailable] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
@@ -126,21 +163,19 @@ const AdminPanel = () => {
     localStorage.removeItem('token');
     setSolicitudes([]);
     setStats({});
+    setActionError('');
+    setStatusActionsAvailable(true);
   };
 
   const loadDashboardData = async () => {
     if (!token) return;
     
     try {
+      setActionError('');
       const headers = { Authorization: `Bearer ${token}` };
-      const filterCandidates = filter === 'ALL' ? [null] : (STATUS_ALIASES[filter] || [filter]);
       let solRes = null;
 
-      for (const candidate of filterCandidates) {
-        const url = candidate
-          ? `${API_URL}/api/admin/solicitudes?status=${encodeURIComponent(candidate)}`
-          : `${API_URL}/api/admin/solicitudes`;
-
+      for (const url of buildListUrls(filter)) {
         const response = await fetch(url, { headers });
 
         if (response.status === 401 || response.status === 403) {
@@ -158,11 +193,20 @@ const AdminPanel = () => {
         throw new Error('Unable to load requests');
       }
 
-      const statsRes = await fetch(`${API_URL}/api/admin/solicitudes/statistics`, { headers });
+      let statsRes = null;
+
+      for (const url of buildStatsUrls()) {
+        const response = await fetch(url, { headers });
+
+        if (response.ok) {
+          statsRes = response;
+          break;
+        }
+      }
 
       const solData = await readJsonSafely(solRes);
       const normalizedRequests = Array.isArray(solData) ? solData.map(normalizeRequest) : [];
-      const statsData = statsRes.ok ? await readJsonSafely(statsRes) : null;
+      const statsData = statsRes ? await readJsonSafely(statsRes) : null;
       
       setSolicitudes(normalizedRequests);
       setStats(statsData ? normalizeStats(statsData) : buildStatsFromRequests(normalizedRequests));
@@ -173,27 +217,45 @@ const AdminPanel = () => {
 
   const changeStatus = async (id, newStatus) => {
     try {
-      const candidates = STATUS_ALIASES[newStatus] || [newStatus];
+      setActionError('');
+      let authRejected = false;
 
-      for (const candidate of candidates) {
-        const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}/status?status=${encodeURIComponent(candidate)}`, {
+      for (const url of buildStatusUpdateUrls(id, newStatus)) {
+        const res = await fetch(url, {
           method: 'PATCH',
           headers: { Authorization: `Bearer ${token}` }
         });
 
         if (res.ok) {
+          setStatusActionsAvailable(true);
           loadDashboardData();
           return;
         }
+
+        if (res.status === 401 || res.status === 403) {
+          authRejected = true;
+        }
       }
+
+      if (authRejected) {
+        setStatusActionsAvailable(false);
+        setActionError('Status updates are unavailable in the current backend deployment. Delete is still available.');
+        return;
+      }
+
+      setStatusActionsAvailable(true);
+      setActionError('Unable to update the request status right now.');
     } catch (err) {
       console.error('Error updating status', err);
+      setStatusActionsAvailable(true);
+      setActionError('Unable to update the request status right now.');
     }
   };
 
   const deleteSolicitud = async (id) => {
     if(!confirm('Are you sure you want to delete this request?')) return;
     try {
+      setActionError('');
       const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
@@ -203,6 +265,7 @@ const AdminPanel = () => {
       }
     } catch (err) {
       console.error('Error deleting', err);
+      setActionError('Unable to delete the request right now.');
     }
   };
 
@@ -286,6 +349,12 @@ const AdminPanel = () => {
           </div>
         </div>
 
+        {actionError && (
+          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {actionError}
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(stats).map(([k, v]) => (
@@ -357,15 +426,15 @@ const AdminPanel = () => {
                             {sol.status.replace('_', ' ')}
                           </span>
                           <div className="flex flex-row gap-1 mt-1">
-{(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
-                                <button onClick={() => changeStatus(sol.id, 'ACCEPTED')} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40" title="Accept"><CheckCircle size={14}/></button>
-                              )}
-                              {(sol.status === 'PENDING') && (
-                                <button onClick={() => changeStatus(sol.id, 'IN_REVIEW')} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40" title="Review"><Clock size={14}/></button>
-                              )}
                               {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
-                                <button onClick={() => changeStatus(sol.id, 'REJECTED')} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Reject"><XCircle size={14}/></button>
-                              )}
+                                <button onClick={() => changeStatus(sol.id, 'ACCEPTED')} disabled={!statusActionsAvailable} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Accept' : 'Status updates unavailable'}><CheckCircle size={14}/></button>
+                               )}
+                               {(sol.status === 'PENDING') && (
+                                <button onClick={() => changeStatus(sol.id, 'IN_REVIEW')} disabled={!statusActionsAvailable} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Review' : 'Status updates unavailable'}><Clock size={14}/></button>
+                               )}
+                               {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(sol.id, 'REJECTED')} disabled={!statusActionsAvailable} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Reject' : 'Status updates unavailable'}><XCircle size={14}/></button>
+                               )}
                              <button onClick={() => deleteSolicitud(sol.id)} className="p-1.5 bg-gray-500/20 text-gray-400 rounded hover:bg-red-500/40 hover:text-white" title="Delete"><Trash2 size={14}/></button>
                           </div>
                         </div>
