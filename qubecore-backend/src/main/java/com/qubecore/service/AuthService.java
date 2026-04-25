@@ -28,14 +28,13 @@ public class AuthService {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthService.class);
     private static final int MAX_ATTEMPTS = 5;
-    private static final long LOCKOUT_MS = 15 * 60 * 1000; // 15 minutos
+    private static final long LOCKOUT_MS = 15 * 60 * 1000;
 
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider tokenProvider;
 
-    // Rate limiting: cuenta intentos por IP (simple, en memoria)
     private final Map<String, AttemptTracker> attemptTracker = new ConcurrentHashMap<>();
 
     private static class AttemptTracker {
@@ -45,7 +44,6 @@ public class AuthService {
     }
 
     public JwtResponse login(LoginRequest request, String clientIp) {
-        // Rate limiting check
         checkRateLimit(clientIp);
 
         try {
@@ -53,46 +51,41 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
-            String token = tokenProvider.generarToken(auth);
+            String token = tokenProvider.generateToken(auth);
             Usuario usuario = (Usuario) auth.getPrincipal();
 
-            // Login exitoso: reset intentos
             attemptTracker.remove(clientIp);
             logger.info("LOGIN_SUCCESS | email: {} | ip: {} | timestamp: {}",
                 request.getEmail(), clientIp, LocalDateTime.now());
 
             return new JwtResponse(token, "Bearer", usuario.getId(),
-                    usuario.getNombre(), usuario.getEmail(), usuario.getRol().name());
+                    usuario.getName(), usuario.getEmail(), usuario.getRole().name());
 
         } catch (Exception e) {
-            // Login fallido: registrar intento
             registerFailedAttempt(clientIp, request.getEmail());
             logger.warn("LOGIN_FAILED | email: {} | ip: {} | reason: {} | timestamp: {}",
                 request.getEmail(), clientIp, e.getMessage(), LocalDateTime.now());
 
-            // Mensaje genérico (no revela si el email existe)
-            throw new BadCredentialsException("Credenciales inválidas");
+            throw new BadCredentialsException("Invalid credentials");
         }
     }
 
     public String register(RegisterRequest request) {
-        // Mensaje genérico - no revelar si el email ya existe
         if (usuarioRepository.existsByEmail(request.getEmail())) {
             logger.warn("REGISTER_FAILED | email: {} | reason: already_exists | timestamp: {}",
                 request.getEmail(), LocalDateTime.now());
-            // Mensaje genérico igual que login
-            throw new IllegalArgumentException("Credenciales inválidas");
+            throw new IllegalArgumentException("Invalid credentials");
         }
         Usuario usuario = new Usuario();
-        usuario.setNombre(request.getNombre());
+        usuario.setName(request.getName());
         usuario.setEmail(request.getEmail());
         usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRol(RolUsuario.ROLE_USER);
+        usuario.setRole(RolUsuario.ROLE_USER);
         usuarioRepository.save(usuario);
 
         logger.info("REGISTER_SUCCESS | email: {} | timestamp: {}",
             request.getEmail(), LocalDateTime.now());
-        return "Registro exitoso";
+        return "Registration successful";
     }
 
     private void checkRateLimit(String clientIp) {
@@ -100,7 +93,7 @@ public class AuthService {
         if (tracker != null && tracker.lockoutUntil > System.currentTimeMillis()) {
             long remaining = (tracker.lockoutUntil - System.currentTimeMillis()) / 1000;
             logger.warn("RATE_LIMIT_EXCEEDED | ip: {} | remaining_seconds: {}", clientIp, remaining);
-            throw new BadCredentialsException("Demasiados intentos. Intenta más tarde.");
+            throw new BadCredentialsException("Too many attempts. Try again later.");
         }
     }
 
@@ -110,7 +103,6 @@ public class AuthService {
         if (tracker.firstAttemptTime == 0) {
             tracker.firstAttemptTime = System.currentTimeMillis();
         }
-        // Lockout después de MAX_ATTEMPTS en 15 minutos
         if (tracker.attempts >= MAX_ATTEMPTS) {
             tracker.lockoutUntil = System.currentTimeMillis() + LOCKOUT_MS;
             logger.warn("ACCOUNT_LOCKED | ip: {} | attempts: {} | lockout_minutes: 15",

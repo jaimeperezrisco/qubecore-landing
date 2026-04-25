@@ -61,7 +61,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(
-            "https://qubecore-landing.vercel.app",
+            "https://qubecore.vercel.app",
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:5500"

@@ -25,30 +25,28 @@ public class QubeCoreBackendApplication {
                                       ServicioRepository servicioRepository, 
                                       PasswordEncoder passwordEncoder) {
         return args -> {
-            // Generar usuario admin si no existe
             if (!usuarioRepository.existsByEmail("admin@qubecore.es")) {
                 Usuario admin = new Usuario();
                 admin.setEmail("admin@qubecore.es");
-                admin.setNombre("Admin QubeCore");
+                admin.setName("Admin QubeCore");
                 admin.setPassword(passwordEncoder.encode("Admin123!"));
-                admin.setRol(RolUsuario.ROLE_ADMIN);
-                admin.setActivo(true);
-                admin.setCreadoEn(LocalDateTime.now());
+                admin.setRole(RolUsuario.ROLE_ADMIN);
+                admin.setActive(true);
+                admin.setCreatedAt(LocalDateTime.now());
                 usuarioRepository.save(admin);
-                System.out.println("Usuario admin auto-generado con éxito.");
+                System.out.println("Admin user auto-generated successfully.");
             }
 
-            // Generar servicios base si no existen
             if (servicioRepository.count() == 0) {
                 servicioRepository.saveAll(List.of(
-                    new Servicio(null, "Quantum Hardware Access", "Acceso a hardware", "cpu", true, 1),
-                    new Servicio(null, "Quantum Software Development", "Software cuántico", "code", true, 2),
-                    new Servicio(null, "Quantum Consulting", "Consultoría", "briefcase", true, 3),
-                    new Servicio(null, "Quantum Education", "Formación", "graduation-cap", true, 4),
-                    new Servicio(null, "Quantum Cloud Services", "Servicios Cloud", "cloud", true, 5),
-                    new Servicio(null, "Quantum Security", "Criptografía y seguridad", "shield", true, 6)
+                    new Servicio(null, "Quantum Hardware Access", true, 1),
+                    new Servicio(null, "Quantum Software Development", true, 2),
+                    new Servicio(null, "Quantum Consulting", true, 3),
+                    new Servicio(null, "Quantum Education", true, 4),
+                    new Servicio(null, "Quantum Cloud Services", true, 5),
+                    new Servicio(null, "Quantum Security", true, 6)
                 ));
-                System.out.println("✅ Servicios base auto-generados con éxito.");
+                System.out.println("Base services auto-generated successfully.");
             }
         };
     }

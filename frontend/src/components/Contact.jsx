@@ -2,7 +2,7 @@ import { motion, useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { Mail, User, Building, Phone, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-// Mapeo de interés → servicioId (coincide con el orden en la BD)
+// Interest → serviceId mapping (matches DB order)
 const INTEREST_MAP = {
   hardware: 1,
   software: 2,
@@ -17,14 +17,14 @@ const Contact = () => {
   const formRef = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   
-  const [formData, setFormData] = useState({
-    name: '',
-    company: '',
-    email: '',
-    telefono: '',
-    interest: 'hardware',
-    message: '',
-  });
+const [formData, setFormData] = useState({
+     name: '',
+     company: '',
+     email: '',
+     phone: '',
+     interest: 'hardware',
+     message: '',
+   });
 
   const [formStatus, setFormStatus] = useState({
     loading: false,
@@ -44,14 +44,14 @@ const Contact = () => {
       const response = await fetch(`${API_URL}/api/solicitudes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: formData.name,
-          email: formData.email,
-          empresa: formData.company,
-          telefono: formData.telefono || null,
-          mensaje: formData.message,
-          servicioId: INTEREST_MAP[formData.interest] || null,
-        })
+body: JSON.stringify({
+           name: formData.name,
+           email: formData.email,
+           company: formData.company,
+           phone: formData.phone || null,
+           message: formData.message,
+           serviceId: INTEREST_MAP[formData.interest] || null,
+         })
       });
 
       if (!response.ok) {
@@ -70,14 +70,14 @@ const Contact = () => {
       });
 
       // Reset form
-      setFormData({
-        name: '',
-        company: '',
-        email: '',
-        telefono: '',
-        interest: 'hardware',
-        message: '',
-      });
+setFormData({
+         name: '',
+         company: '',
+         email: '',
+         phone: '',
+         interest: 'hardware',
+         message: '',
+       });
 
       // Reset success message after 5 seconds
       setTimeout(() => {
@@ -229,18 +229,18 @@ const Contact = () => {
                 <Phone size={18} className="text-[var(--accent-cyan)]" />
                 Phone (optional)
               </label>
-              <input
-                type="tel"
-                name="telefono"
-                value={formData.telefono}
-                onChange={handleChange}
-                disabled={formStatus.loading}
-                className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
-                         bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
-                         disabled:opacity-50 disabled:cursor-not-allowed"
-                placeholder="+34 612 345 678"
-              />
+<input
+                 type="tel"
+                 name="phone"
+                 value={formData.phone}
+                 onChange={handleChange}
+                 disabled={formStatus.loading}
+                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
+                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
+                          focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                          disabled:opacity-50 disabled:cursor-not-allowed"
+                 placeholder="+34 612 345 678"
+               />
             </div>
 
             {/* Interest */}

@@ -21,26 +21,26 @@ class SolicitudControllerTest {
     @Autowired ObjectMapper mapper;
 
     @Test
-    void crearSolicitud_debeRetornar201() throws Exception {
+    void createRequest_shouldReturn201() throws Exception {
         SolicitudRequest dto = new SolicitudRequest();
-        dto.setNombre("Ana García");
+        dto.setName("Ana García");
         dto.setEmail("ana@empresa.com");
-        dto.setMensaje("Quiero información sobre Quantum Hardware Access");
+        dto.setMessage("Quiero información sobre Quantum Hardware Access");
 
         mockMvc.perform(post("/api/solicitudes")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(mapper.writeValueAsString(dto)))
             .andExpect(status().isCreated())
-            .andExpect(jsonPath("$.estado").value("PENDIENTE"));
+            .andExpect(jsonPath("$.status").value("PENDING"));
     }
 
     @Test
-    void crearSolicitud_emailDuplicado_debeRetornar400() throws Exception {
-        crearSolicitud_debeRetornar201();
+    void createRequest_duplicateEmail_shouldReturn400() throws Exception {
+        createRequest_shouldReturn201();
         SolicitudRequest dto = new SolicitudRequest();
         dto.setEmail("ana@empresa.com");
-        dto.setNombre("Otro");
-        dto.setMensaje("Segundo intento");
+        dto.setName("Otro");
+        dto.setMessage("Segundo intento");
 
         mockMvc.perform(post("/api/solicitudes")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -23,63 +23,63 @@ public class SolicitudService {
     private final SolicitudRepository solicitudRepository;
     private final ServicioRepository servicioRepository;
 
-    public SolicitudResponse crear(SolicitudRequest dto) {
+    public SolicitudResponse create(SolicitudRequest dto) {
         Solicitud s = new Solicitud();
-        s.setNombre(dto.getNombre());
+        s.setName(dto.getName());
         s.setEmail(dto.getEmail());
-        s.setEmpresa(dto.getEmpresa());
-        s.setTelefono(dto.getTelefono());
-        s.setMensaje(dto.getMensaje());
+        s.setCompany(dto.getCompany());
+        s.setPhone(dto.getPhone());
+        s.setMessage(dto.getMessage());
 
-        if (dto.getServicioId() != null) {
-            Servicio servicio = servicioRepository.findById(dto.getServicioId())
-                .orElseThrow(() -> new ResourceNotFoundException("Servicio no encontrado"));
+        if (dto.getServiceId() != null) {
+            Servicio servicio = servicioRepository.findById(dto.getServiceId())
+                .orElseThrow(() -> new ResourceNotFoundException("Service not found"));
             s.setServicio(servicio);
         }
 
-        Solicitud guardada = solicitudRepository.save(s);
-        return mapToResponse(guardada, false);
+        Solicitud saved = solicitudRepository.save(s);
+        return mapToResponse(saved, false);
     }
 
-    public List<SolicitudResponse> listarTodas() {
-        return solicitudRepository.findByOrderByCreadaEnDesc()
+    public List<SolicitudResponse> listAll() {
+        return solicitudRepository.findByOrderByCreatedAtDesc()
                 .stream().map(s -> mapToResponse(s, true)).toList();
     }
 
-    public List<SolicitudResponse> listarPorEstado(EstadoSolicitud estado) {
-        return solicitudRepository.findByEstado(estado)
+    public List<SolicitudResponse> listByStatus(EstadoSolicitud status) {
+        return solicitudRepository.findByStatus(status)
                 .stream().map(s -> mapToResponse(s, true)).toList();
     }
 
-    public SolicitudResponse actualizarEstado(Long id, EstadoSolicitud estado, String notas) {
+    public SolicitudResponse updateStatus(Long id, EstadoSolicitud status, String notes) {
         Solicitud s = solicitudRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Solicitud no encontrada"));
-        s.setEstado(estado);
-        if (notas != null) s.setNotasInternas(notas);
-        s.setActualizadaEn(LocalDateTime.now());
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
+        s.setStatus(status);
+        if (notes != null) s.setInternalNotes(notes);
+        s.setUpdatedAt(LocalDateTime.now());
         return mapToResponse(solicitudRepository.save(s), true);
     }
 
-    public void eliminar(Long id) {
+    public void delete(Long id) {
         if (!solicitudRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Solicitud no encontrada");
+            throw new ResourceNotFoundException("Request not found");
         }
         solicitudRepository.deleteById(id);
     }
 
-    public Map<String, Long> estadisticas() {
+    public Map<String, Long> statistics() {
         Map<String, Long> stats = new LinkedHashMap<>();
         for (EstadoSolicitud e : EstadoSolicitud.values()) {
-            stats.put(e.name(), solicitudRepository.countByEstado(e));
+            stats.put(e.name(), solicitudRepository.countByStatus(e));
         }
         return stats;
     }
 
-    private SolicitudResponse mapToResponse(Solicitud s, boolean esAdmin) {
-        String nombreServicio = s.getServicio() != null ? s.getServicio().getNombre() : null;
-        String notas = esAdmin ? s.getNotasInternas() : null;
-        return new SolicitudResponse(s.getId(), s.getNombre(), s.getEmail(),
-                s.getEmpresa(), s.getTelefono(), s.getMensaje(), nombreServicio,
-                s.getEstado().name(), s.getCreadaEn(), notas);
+    private SolicitudResponse mapToResponse(Solicitud s, boolean isAdmin) {
+        String serviceName = s.getServicio() != null ? s.getServicio().getName() : null;
+        String notes = isAdmin ? s.getInternalNotes() : null;
+        return new SolicitudResponse(s.getId(), s.getName(), s.getEmail(),
+                s.getCompany(), s.getPhone(), s.getMessage(), serviceName,
+                s.getStatus().name(), s.getCreatedAt(), notes);
     }
 }

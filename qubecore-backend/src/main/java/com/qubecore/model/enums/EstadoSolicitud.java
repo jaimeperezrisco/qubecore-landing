@@ -1,5 +1,5 @@
 package com.qubecore.model.enums;
 
 public enum EstadoSolicitud {
-    PENDIENTE, EN_REVISION, ACEPTADA, RECHAZADA, CERRADA
+    PENDING, IN_REVIEW, ACCEPTED, REJECTED, CLOSED
 }
