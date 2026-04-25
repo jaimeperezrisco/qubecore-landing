@@ -43,7 +43,6 @@ const Header = () => {
     { name: 'Hardware', href: '#hardware' },
     { name: 'Team', href: '#team' },
     { name: 'Contact', href: '#contact' },
-    { name: 'Legal', href: '/legal', isSpecial: true },
   ];
 
   const handleNavClick = (e, item) => {
