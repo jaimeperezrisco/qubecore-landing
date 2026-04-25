@@ -1,6 +1,6 @@
 package com.qubecore.model.enums;
 
-public enum RolUsuario {
+public enum UserRole {
     ROLE_USER,
     ROLE_ADMIN
 }
