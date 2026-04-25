@@ -50,7 +50,7 @@ const Header = () => {
     
     if (isSpecialRoute) {
       e.preventDefault();
-      window.location.href = '/' + item.href;
+      window.location.assign('/' + item.href);
     }
   };
 
