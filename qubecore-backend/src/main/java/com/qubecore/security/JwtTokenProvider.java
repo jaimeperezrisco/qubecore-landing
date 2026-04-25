@@ -20,7 +20,7 @@ public class JwtTokenProvider {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpirationMs;
 
-    public String generarToken(Authentication auth) {
+    public String generateToken(Authentication auth) {
         UserDetails user = (UserDetails) auth.getPrincipal();
         return Jwts.builder()
                 .setSubject(user.getUsername())
@@ -30,14 +30,14 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getEmailDesdeToken(String token) {
+    public String getEmailFromToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey()).build()
                 .parseClaimsJws(token)
                 .getBody().getSubject();
     }
 
-    public boolean validarToken(String token) {
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(token);
             return true;

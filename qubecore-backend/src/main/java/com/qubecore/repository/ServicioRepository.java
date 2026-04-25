@@ -8,5 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ServicioRepository extends JpaRepository<Servicio, Long> {
-    List<Servicio> findByActivoTrueOrderByOrdenAsc();
+    List<Servicio> findByActivoTrueOrderBySortOrderAsc();
 }

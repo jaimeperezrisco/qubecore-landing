@@ -18,13 +18,13 @@ public class ServicioController {
     private final ServicioService servicioService;
 
     @GetMapping
-    public ResponseEntity<List<Servicio>> listar() {
-        return ResponseEntity.ok(servicioService.listarActivos());
+    public ResponseEntity<List<Servicio>> list() {
+        return ResponseEntity.ok(servicioService.listActive());
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Servicio> crear(@RequestBody Servicio servicio) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(servicioService.guardar(servicio));
+    public ResponseEntity<Servicio> create(@RequestBody Servicio servicio) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(servicioService.save(servicio));
     }
 }

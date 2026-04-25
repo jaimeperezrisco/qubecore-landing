@@ -22,37 +22,37 @@ public class SolicitudController {
     private final SolicitudService solicitudService;
 
     @PostMapping("/solicitudes")
-    public ResponseEntity<SolicitudResponse> crear(@Valid @RequestBody SolicitudRequest dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(solicitudService.crear(dto));
+    public ResponseEntity<SolicitudResponse> create(@Valid @RequestBody SolicitudRequest dto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(solicitudService.create(dto));
     }
 
     @GetMapping("/admin/solicitudes")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<SolicitudResponse>> listar(
-            @RequestParam(required = false) EstadoSolicitud estado) {
-        if (estado != null) return ResponseEntity.ok(solicitudService.listarPorEstado(estado));
-        return ResponseEntity.ok(solicitudService.listarTodas());
+    public ResponseEntity<List<SolicitudResponse>> list(
+            @RequestParam(required = false) EstadoSolicitud status) {
+        if (status != null) return ResponseEntity.ok(solicitudService.listByStatus(status));
+        return ResponseEntity.ok(solicitudService.listAll());
     }
 
-    @PatchMapping("/admin/solicitudes/{id}/estado")
+    @PatchMapping("/admin/solicitudes/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<SolicitudResponse> actualizarEstado(
+    public ResponseEntity<SolicitudResponse> updateStatus(
             @PathVariable Long id,
-            @RequestParam EstadoSolicitud estado,
-            @RequestParam(required = false) String notas) {
-        return ResponseEntity.ok(solicitudService.actualizarEstado(id, estado, notas));
+            @RequestParam EstadoSolicitud status,
+            @RequestParam(required = false) String notes) {
+        return ResponseEntity.ok(solicitudService.updateStatus(id, status, notes));
     }
 
     @DeleteMapping("/admin/solicitudes/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
-        solicitudService.eliminar(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        solicitudService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/admin/solicitudes/estadisticas")
+    @GetMapping("/admin/solicitudes/statistics")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, Long>> estadisticas() {
-        return ResponseEntity.ok(solicitudService.estadisticas());
+    public ResponseEntity<Map<String, Long>> statistics() {
+        return ResponseEntity.ok(solicitudService.statistics());
     }
 }
