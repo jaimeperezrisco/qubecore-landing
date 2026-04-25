@@ -69,7 +69,7 @@ body: JSON.stringify({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Error enviando solicitud');
+        throw new Error(errorData.error || 'Error submitting request');
       }
 
       console.log('Request created successfully');
@@ -121,6 +121,9 @@ setFormData({
     const { name, value } = e.target;
     if (name === 'rgpd') {
       setConsents(prev => ({ ...prev, [name]: e.target.checked }));
+    } else if (name === 'phone') {
+      const numericValue = value.replace(/[^0-9+]/g, '');
+      setFormData(prev => ({ ...prev, [name]: numericValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -304,6 +307,9 @@ setFormData({
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Tell us about your quantum computing needs..."
               />
+              <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
+                {formData.message.length} / 2000 characters
+              </p>
             </div>
 
             {/* RGPD Consent */}
