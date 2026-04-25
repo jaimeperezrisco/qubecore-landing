@@ -3,6 +3,8 @@ import ParticlesBackground from './components/ParticlesBackground';
 import Hero from './components/Hero';
 import ProblemSolution from './components/ProblemSolution';
 import Offer from './components/Offer';
+import TrainingSection from './components/TrainingSection';
+import ConsultingSection from './components/ConsultingSection';
 import WhyUs from './components/WhyUs';
 import HardwareDeepDive from './components/HardwareDeepDive';
 import Team from './components/Team';
@@ -44,7 +46,7 @@ function App() {
     <div className="relative min-h-screen overflow-x-hidden">
       {/* Particles Background - Fixed across all sections */}
       <ParticlesBackground />
-      
+
       {/* Header - Fixed navigation */}
       <Header />
 
@@ -53,8 +55,10 @@ function App() {
         <Hero />
         <ProblemSolution />
         <Offer />
-        <WhyUs />
         <HardwareDeepDive />
+        <TrainingSection />
+        <ConsultingSection />
+        <WhyUs />
         <Team />
         <Contact />
       </main>
@@ -69,8 +73,8 @@ function App() {
             Made with quantum precision
           </p>
           <p className="text-xs text-[var(--text-secondary)] mt-2">
-            <a href="/legal" className="hover:text-[var(--accent-cyan)]">Legal Notices</a> | 
-            <a href="/legal" className="hover:text-[var(--accent-cyan)] ml-2">Privacy Policy</a> | 
+            <a href="/legal" className="hover:text-[var(--accent-cyan)]">Legal Notices</a> |
+            <a href="/legal" className="hover:text-[var(--accent-cyan)] ml-2">Privacy Policy</a> |
             <a href="/legal" className="hover:text-[var(--accent-cyan)] ml-2">Cookie Policy</a>
           </p>
         </div>
