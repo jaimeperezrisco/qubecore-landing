@@ -17,14 +17,18 @@ const Contact = () => {
   const formRef = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   
-  const [formData, setFormData] = useState({
-    name: '',
-    company: '',
-    email: '',
-    telefono: '',
-    interest: 'hardware',
-    message: '',
-  });
+const [formData, setFormData] = useState({
+     name: '',
+     company: '',
+     email: '',
+     phone: '',
+     interest: 'hardware',
+     message: '',
+   });
+
+    const [consents, setConsents] = useState({
+      rgpd: false,
+    });
 
   const [formStatus, setFormStatus] = useState({
     loading: false,
@@ -33,10 +37,19 @@ const Contact = () => {
     message: '',
   });
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!consents.rgpd) {
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: true,
+        message: 'Please accept the privacy policy to submit your request.',
+      });
+      return;
+    }
     
-    // Reset status
     setFormStatus({ loading: true, success: false, error: false, message: '' });
 
     try {
@@ -70,14 +83,16 @@ const Contact = () => {
       });
 
       // Reset form
-      setFormData({
-        name: '',
-        company: '',
-        email: '',
-        telefono: '',
-        interest: 'hardware',
-        message: '',
-      });
+setFormData({
+         name: '',
+         company: '',
+         email: '',
+         phone: '',
+         interest: 'hardware',
+         message: '',
+       });
+
+      setConsents({ rgpd: false });
 
       // Reset success message after 5 seconds
       setTimeout(() => {
@@ -103,10 +118,12 @@ const Contact = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    if (name === 'rgpd') {
+      setConsents(prev => ({ ...prev, [name]: e.target.checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -287,6 +304,27 @@ const Contact = () => {
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Tell us about your quantum computing needs..."
               />
+            </div>
+
+            {/* RGPD Consent */}
+            <div className="legal-consent">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="rgpd"
+                  checked={consents.rgpd}
+                  onChange={handleChange}
+                  disabled={formStatus.loading}
+                  className="consent-checkbox mt-1"
+                />
+                <div className="text-sm text-[var(--text-secondary)]">
+                  <span className="text-[var(--text-primary)]">I have read and accept the </span>
+                  <a href="/legal" target="_blank" rel="noopener noreferrer" className="consent-link">
+                    Privacy Policy
+                  </a>
+                  <span className="text-[var(--text-primary)]">. I consent to the processing of my personal data to respond to my inquiry. I understand my rights under RGPD, including access, rectification, and deletion of my data.</span>
+                </div>
+              </label>
             </div>
 
             {/* Submit Button */}

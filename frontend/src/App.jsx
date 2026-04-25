@@ -8,21 +8,36 @@ import HardwareDeepDive from './components/HardwareDeepDive';
 import Team from './components/Team';
 import Contact from './components/Contact';
 import AdminPanel from './components/AdminPanel';
+import Legal from './components/Legal';
+import CookieBanner from './components/CookieBanner';
 import { useState, useEffect } from 'react';
 
 function App() {
-  const [isAdminRoute, setIsAdminRoute] = useState(window.location.pathname.startsWith('/admin'));
+  const [route, setRoute] = useState(window.location.pathname);
 
   useEffect(() => {
-    const handleLocationChange = () => {
-      setIsAdminRoute(window.location.pathname.startsWith('/admin'));
+    const handleRouteChange = () => {
+      setRoute(window.location.pathname);
     };
-    window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener('popstate', handleRouteChange);
+    return () => window.removeEventListener('popstate', handleRouteChange);
   }, []);
 
-  if (isAdminRoute) {
+  if (route.startsWith('/admin')) {
     return <AdminPanel />;
+  }
+
+  if (route.startsWith('/legal')) {
+    return (
+      <div className="min-h-screen">
+        <ParticlesBackground />
+        <Header />
+        <div className="pt-16 md:pt-20">
+          <Legal />
+        </div>
+        <CookieBanner />
+      </div>
+    );
   }
 
   return (
@@ -53,8 +68,16 @@ function App() {
           <p className="text-xs text-[var(--text-secondary)] mt-2">
             Made with quantum precision
           </p>
+          <p className="text-xs text-[var(--text-secondary)] mt-2">
+            <a href="/legal" className="hover:text-[var(--accent-cyan)]">Legal Notices</a> | 
+            <a href="/legal" className="hover:text-[var(--accent-cyan)] ml-2">Privacy Policy</a> | 
+            <a href="/legal" className="hover:text-[var(--accent-cyan)] ml-2">Cookie Policy</a>
+          </p>
         </div>
       </footer>
+
+      {/* Cookie Banner */}
+      <CookieBanner />
     </div>
   );
 }

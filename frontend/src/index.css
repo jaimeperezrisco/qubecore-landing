@@ -14,7 +14,6 @@
 
 @layer base {
   :root {
-    /* Modo Claro (Estética Futurística) */
     --bg-primary: #F0F4F8;
     --bg-secondary: #FFFFFF;
     --text-primary: #0A0F1A;
@@ -28,7 +27,6 @@
   }
 
   .dark {
-    /* Modo Oscuro (Predeterminado) */
     --bg-primary: #0A0F1A;
     --bg-secondary: #121826;
     --text-primary: #FFFFFF;
@@ -54,9 +52,6 @@
 }
 
 @layer components {
-  /* ===== HEADER GLASSMORPHISM ===== */
-  
-  /* Estado inicial (sin scroll) - Ambos modos */
   .glass-header {
     backdrop-filter: blur(2px) saturate(135%);
     -webkit-backdrop-filter: blur(2px) saturate(135%);
@@ -65,17 +60,14 @@
     transition: all 0.3s ease;
   }
 
-  /* Dark mode - Sin scroll */
   .dark .glass-header {
     background: rgba(10, 15, 26, 0.54);
   }
 
-  /* Light mode - Sin scroll */
   html:not(.dark) .glass-header {
     background: rgba(240, 244, 248, 0.54);
   }
 
-  /* Estado con scroll - Ambos modos */
   .glass-header-scrolled {
     backdrop-filter: blur(4px) saturate(145%);
     -webkit-backdrop-filter: blur(4px) saturate(145%);
@@ -84,19 +76,16 @@
     transition: all 0.3s ease;
   }
 
-  /* Dark mode - Con scroll */
   .dark .glass-header-scrolled {
     background: rgba(10, 15, 26, 0.7);
     border-bottom-color: rgba(0, 240, 255, 0.15);
   }
 
-  /* Light mode - Con scroll */
   html:not(.dark) .glass-header-scrolled {
     background: rgba(240, 244, 248, 0.7);
     border-bottom-color: rgba(0, 153, 204, 0.2);
   }
 
-  /* ===== GLASSMORPHISM COMPONENTS ===== */
   .glass {
     background: var(--glass-bg);
     backdrop-filter: blur(16px);
@@ -121,7 +110,6 @@
     box-shadow: 0 8px 40px var(--glass-shadow);
   }
 
-  /* Button Styles */
   .btn-primary {
     padding: 0.75rem 1.5rem;
     border-radius: 9999px;
@@ -169,7 +157,6 @@
     color: var(--text-primary);
   }
 
-  /* Section Container */
   .section {
     padding-top: 5rem;
     padding-bottom: 5rem;
@@ -177,28 +164,7 @@
     padding-right: 1.5rem;
     position: relative;
   }
-  
-  @media (min-width: 768px) {
-    .section {
-      padding-left: 3rem;
-      padding-right: 3rem;
-    }
-  }
-  
-  @media (min-width: 1024px) {
-    .section {
-      padding-left: 6rem;
-      padding-right: 6rem;
-    }
-  }
 
-  /* Smooth Scroll */
-  html {
-    scroll-behavior: smooth;
-  }
-}
-
-@layer utilities {
   .text-gradient {
     background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
     -webkit-background-clip: text;
@@ -212,5 +178,200 @@
 
   .glow-magenta {
     box-shadow: 0 0 20px var(--accent-magenta);
+  }
+
+  .cookie-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--glass-border);
+    padding: 1rem 1.5rem;
+    transition: all 0.3s ease;
+  }
+
+  .cookie-banner-hiding {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  .dark .cookie-banner {
+    background: rgba(10, 15, 26, 0.95);
+  }
+
+  html:not(.dark) .cookie-banner {
+    background: rgba(240, 244, 248, 0.95);
+  }
+
+  .cookie-banner-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .cookie-banner-icon {
+    flex-shrink: 0;
+    color: var(--accent-cyan);
+  }
+
+  .cookie-banner-text {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .cookie-banner-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cookie-banner-description {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .cookie-link {
+    color: var(--accent-cyan);
+    text-decoration: underline;
+  }
+
+  .cookie-link:hover {
+    opacity: 0.8;
+  }
+
+  .cookie-banner-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+
+  .cookie-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+  }
+
+  .cookie-btn-reject {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+  }
+
+  .cookie-btn-reject:hover {
+    border-color: var(--text-secondary);
+    color: var(--text-primary);
+  }
+
+  .cookie-btn-learn {
+    background: transparent;
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .cookie-btn-learn:hover {
+    background: var(--accent-cyan);
+    color: var(--bg-primary);
+  }
+
+  .cookie-btn-accept {
+    background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+    color: white;
+  }
+
+  .cookie-btn-accept:hover {
+    transform: scale(1.02);
+  }
+
+  .legal-consent {
+    background: rgba(0, 240, 255, 0.05);
+    border: 1px solid rgba(0, 240, 255, 0.15);
+    border-radius: 0.75rem;
+    padding: 1rem;
+  }
+
+  .consent-checkbox {
+    width: 18px;
+    height: 18px;
+    border-radius: 0.25rem;
+    border: 2px solid var(--glass-border);
+    background: var(--glass-bg);
+    cursor: pointer;
+    accent-color: var(--accent-cyan);
+    flex-shrink: 0;
+  }
+
+  .consent-checkbox:checked {
+    background: var(--accent-cyan);
+    border-color: var(--accent-cyan);
+  }
+
+  .consent-link {
+    color: var(--accent-cyan);
+    font-weight: 500;
+    text-decoration: underline;
+  }
+
+  .consent-link:hover {
+    opacity: 0.8;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 640px) {
+  .cookie-banner {
+    padding: 1rem;
+  }
+
+  .cookie-banner-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .cookie-banner-text {
+    width: 100%;
+  }
+
+  .cookie-banner-actions {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .cookie-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding-left: 3rem;
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .section {
+    padding-left: 6rem;
+    padding-right: 6rem;
   }
 }
