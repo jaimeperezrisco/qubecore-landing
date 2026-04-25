@@ -28,28 +28,28 @@ public class Usuario implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    private String nombre;
+    private String name;
 
     @Column(nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private RolUsuario rol = RolUsuario.ROLE_USER;
+    private RolUsuario role = RolUsuario.ROLE_USER;
 
     @Column(nullable = false)
-    private Boolean activo = true;
+    private Boolean active = true;
 
     @CreationTimestamp
-    private LocalDateTime creadoEn;
+    private LocalDateTime createdAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(rol.name()));
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
     @Override public String getUsername() { return email; }
     @Override public boolean isAccountNonExpired() { return true; }
-    @Override public boolean isAccountNonLocked() { return activo; }
+    @Override public boolean isAccountNonLocked() { return active; }
     @Override public boolean isCredentialsNonExpired() { return true; }
-    @Override public boolean isEnabled() { return activo; }
+    @Override public boolean isEnabled() { return active; }
 }

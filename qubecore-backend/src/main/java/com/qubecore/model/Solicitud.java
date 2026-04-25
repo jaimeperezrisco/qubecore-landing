@@ -20,16 +20,16 @@ public class Solicitud {
     private Long id;
 
     @Column(nullable = false)
-    private String nombre;
+    private String name;
 
     @Column(nullable = false)
     private String email;
 
-    private String empresa;
-    private String telefono;
+    private String company;
+    private String phone;
 
     @Column(length = 2000)
-    private String mensaje;
+    private String message;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "servicio_id")
@@ -37,17 +37,17 @@ public class Solicitud {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private EstadoSolicitud estado = EstadoSolicitud.PENDIENTE;
+    private EstadoSolicitud status = EstadoSolicitud.PENDING;
 
     @CreationTimestamp
-    private LocalDateTime creadaEn;
+    private LocalDateTime createdAt;
 
-    private LocalDateTime actualizadaEn;
+    private LocalDateTime updatedAt;
 
     @Column(length = 500)
-    private String notasInternas;
+    private String internalNotes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "gestionada_por")
-    private Usuario gestionadaPor;
+    @JoinColumn(name = "handled_by")
+    private Usuario handledBy;
 }

@@ -1,29 +1,88 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mail, User, Building, Phone, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-// Mapeo de interés → servicioId (coincide con el orden en la BD)
-const INTEREST_MAP = {
-  hardware: 1,
-  software: 2,
-  consulting: 3,
-  education: 4,
-  cloud: 5,
-  security: 6,
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+const SERVICE_OPTIONS = [
+  { value: 'hardware', label: 'Quantum Hardware Access' },
+  { value: 'software', label: 'Quantum Software Development' },
+  { value: 'consulting', label: 'Quantum Consulting' },
+  { value: 'education', label: 'Quantum Education' },
+  { value: 'cloud', label: 'Quantum Cloud Services' },
+  { value: 'security', label: 'Quantum Security' },
+];
+
+const FIELD_LABELS = {
+  name: 'Full Name',
+  nombre: 'Full Name',
+  email: 'Email Address',
+  company: 'Company / Organization',
+  empresa: 'Company / Organization',
+  phone: 'Phone',
+  telefono: 'Phone',
+  message: 'Message',
+  mensaje: 'Message',
+  serviceId: 'Area of Interest',
+  servicioId: 'Area of Interest',
+};
+
+const formatApiError = (errorData) => {
+  if (!errorData || typeof errorData !== 'object') {
+    return 'Error submitting request';
+  }
+
+  if (errorData.error) {
+    if (errorData.error === 'Validation failed' && errorData.fieldErrors && typeof errorData.fieldErrors === 'object') {
+      const [firstField, firstMessage] = Object.entries(errorData.fieldErrors)[0] || [];
+
+      if (firstMessage) {
+        return `${FIELD_LABELS[firstField] || firstField}: ${firstMessage}`;
+      }
+    }
+
+    return errorData.error;
+  }
+
+  const [firstField, firstMessage] = Object.entries(errorData)[0] || [];
+  if (firstMessage) {
+    return `${FIELD_LABELS[firstField] || firstField}: ${firstMessage}`;
+  }
+
+  return 'Error submitting request';
+};
+
+const readErrorResponse = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return { error: 'Error submitting request' };
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: text };
+  }
 };
 
 const Contact = () => {
   const ref = useRef(null);
   const formRef = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  
+  const [serviceIdMap, setServiceIdMap] = useState({});
+
   const [formData, setFormData] = useState({
     name: '',
     company: '',
     email: '',
-    telefono: '',
+    phone: '',
     interest: 'hardware',
     message: '',
+  });
+
+  const [consents, setConsents] = useState({
+    rgpd: false,
   });
 
   const [formStatus, setFormStatus] = useState({
@@ -33,35 +92,76 @@ const Contact = () => {
     message: '',
   });
 
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/servicios`);
+
+        if (!response.ok) {
+          return;
+        }
+
+        const services = await response.json();
+        const nextServiceIdMap = {};
+
+        SERVICE_OPTIONS.forEach((option) => {
+          const matchedService = services.find((service) => {
+            const serviceName = service.name || service.nombre;
+            return serviceName === option.label;
+          });
+          if (matchedService) {
+            nextServiceIdMap[option.value] = matchedService.id;
+          }
+        });
+
+        setServiceIdMap(nextServiceIdMap);
+      } catch (error) {
+        console.error('Error loading services:', error);
+      }
+    };
+
+    loadServices();
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!consents.rgpd) {
+      setFormStatus({
+        loading: false,
+        success: false,
+        error: true,
+        message: 'Please accept the privacy policy to submit your request.',
+      });
+      return;
+    }
     
-    // Reset status
     setFormStatus({ loading: true, success: false, error: false, message: '' });
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
       const response = await fetch(`${API_URL}/api/solicitudes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          name: formData.name,
           nombre: formData.name,
           email: formData.email,
+          company: formData.company,
           empresa: formData.company,
-          telefono: formData.telefono || null,
+          phone: formData.phone || null,
+          telefono: formData.phone || null,
+          message: formData.message,
           mensaje: formData.message,
-          servicioId: INTEREST_MAP[formData.interest] || null,
+          serviceId: serviceIdMap[formData.interest] || null,
+          servicioId: serviceIdMap[formData.interest] || null,
         })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error enviando solicitud');
+        const errorData = await readErrorResponse(response);
+        throw new Error(formatApiError(errorData));
       }
 
-      console.log('Request created successfully');
-
-      // Success state
       setFormStatus({
         loading: false,
         success: true,
@@ -69,25 +169,24 @@ const Contact = () => {
         message: 'Thank you! Your request has been sent successfully. We will contact you soon.',
       });
 
-      // Reset form
       setFormData({
         name: '',
         company: '',
         email: '',
-        telefono: '',
+        phone: '',
         interest: 'hardware',
         message: '',
       });
 
-      // Reset success message after 5 seconds
+      setConsents({ rgpd: false });
+
       setTimeout(() => {
         setFormStatus({ loading: false, success: false, error: false, message: '' });
       }, 5000);
 
     } catch (error) {
       console.error('Request Error:', error);
-      
-      // Error state
+
       setFormStatus({
         loading: false,
         success: false,
@@ -95,7 +194,6 @@ const Contact = () => {
         message: `Oops! Something went wrong: ${error.message}. Please try again.`,
       });
 
-      // Reset error message after 5 seconds
       setTimeout(() => {
         setFormStatus({ loading: false, success: false, error: false, message: '' });
       }, 5000);
@@ -103,10 +201,15 @@ const Contact = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    if (name === 'rgpd') {
+      setConsents((prev) => ({ ...prev, [name]: e.target.checked }));
+    } else if (name === 'phone') {
+      const numericValue = value.replace(/[^0-9+]/g, '');
+      setFormData((prev) => ({ ...prev, [name]: numericValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -192,7 +295,6 @@ const Contact = () => {
                 name="company"
                 value={formData.company}
                 onChange={handleChange}
-                required
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
@@ -231,8 +333,8 @@ const Contact = () => {
               </label>
               <input
                 type="tel"
-                name="telefono"
-                value={formData.telefono}
+                name="phone"
+                value={formData.phone}
                 onChange={handleChange}
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
@@ -258,12 +360,9 @@ const Contact = () => {
                          focus:outline-none focus:border-[var(--accent-cyan)] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="hardware">Quantum Hardware Access</option>
-                <option value="software">Quantum Software Development</option>
-                <option value="consulting">Quantum Consulting</option>
-                <option value="education">Quantum Education</option>
-                <option value="cloud">Quantum Cloud Services</option>
-                <option value="security">Quantum Security</option>
+                {SERVICE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </div>
 
@@ -279,6 +378,7 @@ const Contact = () => {
                 onChange={handleChange}
                 rows="5"
                 maxLength={2000}
+                required
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
@@ -287,6 +387,30 @@ const Contact = () => {
                          disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Tell us about your quantum computing needs..."
               />
+              <p className="text-xs text-[var(--text-secondary)] mt-1 text-right">
+                {formData.message.length} / 2000 characters
+              </p>
+            </div>
+
+            {/* RGPD Consent */}
+            <div className="legal-consent">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="rgpd"
+                  checked={consents.rgpd}
+                  onChange={handleChange}
+                  disabled={formStatus.loading}
+                  className="consent-checkbox mt-1"
+                />
+                <div className="text-sm text-[var(--text-secondary)]">
+                  <span className="text-[var(--text-primary)]">I have read and accept the </span>
+                  <a href="/legal" target="_blank" rel="noopener noreferrer" className="consent-link">
+                    Privacy Policy
+                  </a>
+                  <span className="text-[var(--text-primary)]">. I consent to the processing of my personal data to respond to my inquiry. I understand my rights under RGPD, including access, rectification, and deletion of my data.</span>
+                </div>
+              </label>
             </div>
 
             {/* Submit Button */}

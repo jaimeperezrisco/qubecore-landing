@@ -18,6 +18,7 @@ const Offer = () => {
         'Seamless cloud integration',
       ],
       highlight: true,
+      ctaLink: '#hardware',
     },
     {
       icon: GraduationCap,
@@ -29,7 +30,8 @@ const Offer = () => {
         'Certification programs',
         'Ongoing learning resources',
       ],
-      highlight: false,
+      highlight: true,
+      ctaLink: '#training',
     },
     {
       icon: Headphones,
@@ -41,7 +43,8 @@ const Offer = () => {
         'Implementation support',
         '24/7 technical assistance',
       ],
-      highlight: false,
+      highlight: true,
+      ctaLink: '#consulting',
     },
   ];
 
@@ -104,10 +107,10 @@ const Offer = () => {
                   ))}
                 </ul>
 
-                {/* CTA - Solo el destacado tiene un botón especial */}
-                {offer.highlight && (
+                {/* CTA */}
+                {offer.highlight && offer.ctaLink && (
                   <a 
-                    href="#hardware" 
+                    href={offer.ctaLink} 
                     className="block w-full text-center btn-primary mt-4"
                   >
                     Learn More

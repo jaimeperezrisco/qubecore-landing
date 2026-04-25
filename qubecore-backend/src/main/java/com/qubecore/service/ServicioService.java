@@ -13,11 +13,11 @@ public class ServicioService {
 
     private final ServicioRepository servicioRepository;
 
-    public List<Servicio> listarActivos() {
-        return servicioRepository.findByActivoTrueOrderByOrdenAsc();
+    public List<Servicio> listActive() {
+        return servicioRepository.findByActiveTrueOrderBySortOrderAsc();
     }
 
-    public Servicio guardar(Servicio servicio) {
+    public Servicio save(Servicio servicio) {
         return servicioRepository.save(servicio);
     }
 }

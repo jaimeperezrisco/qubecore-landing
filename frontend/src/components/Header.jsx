@@ -35,6 +35,8 @@ const Header = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const isSpecialRoute = window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/legal');
+
   const navItems = [
     { name: 'Home', href: '#hero' },
     { name: 'Solutions', href: '#offer' },
@@ -42,6 +44,15 @@ const Header = () => {
     { name: 'Team', href: '#team' },
     { name: 'Contact', href: '#contact' },
   ];
+
+  const handleNavClick = (e, item) => {
+    if (item.isSpecial) return;
+    
+    if (isSpecialRoute) {
+      e.preventDefault();
+      window.location.assign('/' + item.href);
+    }
+  };
 
   return (
     <motion.header
@@ -53,7 +64,7 @@ const Header = () => {
     >
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 py-3 md:py-4 flex items-center justify-between">
         {/* Logo */}
-        <a href="#hero" className="flex items-center">
+        <a href={isSpecialRoute ? '/' : '#hero'} className="flex items-center">
           <img
             src={logoSinFondo}
             alt="QubeCore"
@@ -66,7 +77,8 @@ const Header = () => {
           {navItems.map((item) => (
             <a
               key={item.name}
-              href={item.href}
+              href={isSpecialRoute && !item.isSpecial ? '/' + item.href : item.href}
+              onClick={(e) => handleNavClick(e, item)}
               className="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] transition-colors"
             >
               {item.name}
@@ -133,8 +145,11 @@ const Header = () => {
               {navItems.map((item) => (
                 <a
                   key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
+                  href={isSpecialRoute && !item.isSpecial ? '/' + item.href : item.href}
+                  onClick={(e) => {
+                    handleNavClick(e, item);
+                    setIsMobileMenuOpen(false);
+                  }}
                   className="block py-2 text-lg font-medium text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] transition-colors"
                 >
                   {item.name}

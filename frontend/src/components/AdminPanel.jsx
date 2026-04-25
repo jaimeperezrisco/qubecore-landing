@@ -2,6 +2,121 @@ import { useState, useEffect } from 'react';
 import { Lock, LogOut, CheckCircle, Clock, XCircle, ListFilter, Trash2 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const EMPTY_STATS = {
+  PENDING: 0,
+  IN_REVIEW: 0,
+  ACCEPTED: 0,
+  REJECTED: 0,
+  CLOSED: 0,
+};
+
+const STATUS_ALIASES = {
+  PENDING: ['PENDING', 'PENDIENTE'],
+  IN_REVIEW: ['IN_REVIEW', 'EN_REVISION'],
+  ACCEPTED: ['ACCEPTED', 'ACEPTED', 'ACEPTADA'],
+  REJECTED: ['REJECTED', 'RECHAZADA'],
+  CLOSED: ['CLOSED', 'CERRADA'],
+};
+
+const STATUS_NORMALIZATION = Object.entries(STATUS_ALIASES).reduce((acc, [englishStatus, aliases]) => {
+  aliases.forEach((alias) => {
+    acc[alias] = englishStatus;
+  });
+  return acc;
+}, {});
+
+const readJsonSafely = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+};
+
+const normalizeStatus = (status) => STATUS_NORMALIZATION[status] || status;
+
+const normalizeRequest = (request) => ({
+  id: request.id,
+  name: request.name || request.nombre || '',
+  email: request.email || '',
+  company: request.company ?? request.empresa ?? '',
+  phone: request.phone ?? request.telefono ?? '',
+  service: request.service ?? request.servicio ?? '',
+  message: request.message ?? request.mensaje ?? '',
+  status: normalizeStatus(request.status || request.estado || 'PENDING'),
+  createdAt: request.createdAt || request.creadaEn || null,
+  internalNotes: request.internalNotes ?? request.notasInternas ?? null,
+});
+
+const normalizeStats = (statsData) => {
+  const nextStats = { ...EMPTY_STATS };
+
+  if (!statsData || typeof statsData !== 'object') {
+    return nextStats;
+  }
+
+  Object.entries(statsData).forEach(([key, value]) => {
+    const normalizedKey = normalizeStatus(key);
+    if (normalizedKey in nextStats) {
+      nextStats[normalizedKey] = value;
+    }
+  });
+
+  return nextStats;
+};
+
+const buildStatsFromRequests = (requests) => {
+  const nextStats = { ...EMPTY_STATS };
+
+  requests.forEach((request) => {
+    if (request.status in nextStats) {
+      nextStats[request.status] += 1;
+    }
+  });
+
+  return nextStats;
+};
+
+const buildListUrls = (filter) => {
+  const baseUrl = `${API_URL}/api/admin/solicitudes`;
+
+  if (filter === 'ALL') {
+    return [baseUrl];
+  }
+
+  const statuses = STATUS_ALIASES[filter] || [filter];
+  const urls = [];
+
+  statuses.forEach((status) => {
+    urls.push(`${baseUrl}?status=${encodeURIComponent(status)}`);
+    urls.push(`${baseUrl}?estado=${encodeURIComponent(status)}`);
+  });
+
+  return [...new Set(urls)];
+};
+
+const buildStatusUpdateUrls = (id, nextStatus) => {
+  const statuses = STATUS_ALIASES[nextStatus] || [nextStatus];
+  const urls = [];
+
+  statuses.forEach((status) => {
+    urls.push(`${API_URL}/api/admin/solicitudes/${id}/status?status=${encodeURIComponent(status)}`);
+    urls.push(`${API_URL}/api/admin/solicitudes/${id}/estado?estado=${encodeURIComponent(status)}`);
+  });
+
+  return [...new Set(urls)];
+};
+
+const buildStatsUrls = () => ([
+  `${API_URL}/api/admin/solicitudes/statistics`,
+  `${API_URL}/api/admin/solicitudes/estadisticas`,
+]);
 
 const AdminPanel = () => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -11,6 +126,8 @@ const AdminPanel = () => {
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [actionError, setActionError] = useState('');
+  const [statusActionsAvailable, setStatusActionsAvailable] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
@@ -46,31 +163,53 @@ const AdminPanel = () => {
     localStorage.removeItem('token');
     setSolicitudes([]);
     setStats({});
+    setActionError('');
+    setStatusActionsAvailable(true);
   };
 
   const loadDashboardData = async () => {
     if (!token) return;
     
     try {
-      console.log('Fetching dashboard data...');
-      let url = `${API_URL}/api/admin/solicitudes`;
-      if (filter !== 'ALL') url += `?estado=${filter}`;
+      setActionError('');
+      const headers = { Authorization: `Bearer ${token}` };
+      let solRes = null;
 
-      const [solRes, statsRes] = await Promise.all([
-        fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/api/admin/solicitudes/estadisticas`, { headers: { 'Authorization': `Bearer ${token}` } })
-      ]);
+      for (const url of buildListUrls(filter)) {
+        const response = await fetch(url, { headers });
 
-      if (solRes.status === 401 || solRes.status === 403) {
-        handleLogout();
-        return;
+        if (response.status === 401 || response.status === 403) {
+          handleLogout();
+          return;
+        }
+
+        if (response.ok) {
+          solRes = response;
+          break;
+        }
       }
 
-      const solData = await solRes.json();
-      const statsData = await statsRes.json();
+      if (!solRes) {
+        throw new Error('Unable to load requests');
+      }
+
+      let statsRes = null;
+
+      for (const url of buildStatsUrls()) {
+        const response = await fetch(url, { headers });
+
+        if (response.ok) {
+          statsRes = response;
+          break;
+        }
+      }
+
+      const solData = await readJsonSafely(solRes);
+      const normalizedRequests = Array.isArray(solData) ? solData.map(normalizeRequest) : [];
+      const statsData = statsRes ? await readJsonSafely(statsRes) : null;
       
-      setSolicitudes(solData);
-      setStats(statsData);
+      setSolicitudes(normalizedRequests);
+      setStats(statsData ? normalizeStats(statsData) : buildStatsFromRequests(normalizedRequests));
     } catch (err) {
       console.error('Error fetching dashboard:', err);
     }
@@ -78,39 +217,65 @@ const AdminPanel = () => {
 
   const changeStatus = async (id, newStatus) => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}/estado?estado=${newStatus}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.ok) {
-        loadDashboardData();
+      setActionError('');
+      let authRejected = false;
+
+      for (const url of buildStatusUpdateUrls(id, newStatus)) {
+        const res = await fetch(url, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        if (res.ok) {
+          setStatusActionsAvailable(true);
+          loadDashboardData();
+          return;
+        }
+
+        if (res.status === 401 || res.status === 403) {
+          authRejected = true;
+        }
       }
+
+      if (authRejected) {
+        setStatusActionsAvailable(false);
+        setActionError('Status updates are unavailable in the current backend deployment. Delete is still available.');
+        return;
+      }
+
+      setStatusActionsAvailable(true);
+      setActionError('Unable to update the request status right now.');
     } catch (err) {
       console.error('Error updating status', err);
+      setStatusActionsAvailable(true);
+      setActionError('Unable to update the request status right now.');
     }
   };
 
   const deleteSolicitud = async (id) => {
     if(!confirm('Are you sure you want to delete this request?')) return;
     try {
+      setActionError('');
       const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         loadDashboardData();
       }
     } catch (err) {
       console.error('Error deleting', err);
+      setActionError('Unable to delete the request right now.');
     }
   };
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'PENDIENTE': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-      case 'EN_REVISION': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'ACEPTADA': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      case 'RECHAZADA': return 'text-red-400 bg-red-400/10 border-red-400/20';
+      case 'PENDING': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+      case 'IN_REVIEW': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
+      case 'ACCEPTED': return 'text-green-400 bg-green-400/10 border-green-400/20';
+      case 'REJECTED': return 'text-red-400 bg-red-400/10 border-red-400/20';
+      case 'CLOSED': return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
       default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
     }
   };
@@ -184,6 +349,12 @@ const AdminPanel = () => {
           </div>
         </div>
 
+        {actionError && (
+          <div className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            {actionError}
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {Object.entries(stats).map(([k, v]) => (
@@ -197,7 +368,7 @@ const AdminPanel = () => {
         {/* Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
           <ListFilter size={18} className="text-[var(--text-secondary)] mr-2" />
-          {['ALL', 'PENDIENTE', 'EN_REVISION', 'ACEPTADA', 'RECHAZADA'].map(s => (
+          {['ALL', 'PENDING', 'IN_REVIEW', 'ACCEPTED', 'REJECTED'].map(s => (
             <button
               key={s}
               onClick={() => setFilter(s)}
@@ -232,44 +403,44 @@ const AdminPanel = () => {
                   solicitudes.map(sol => (
                     <tr key={sol.id} className="border-b border-[var(--glass-border)] hover:bg-white/[0.02]">
                       <td className="p-4 align-top">
-                        <div className="font-medium text-white">{sol.nombre}</div>
+                        <div className="font-medium text-white">{sol.name}</div>
                         <div className="text-xs text-gray-400 mt-1">{sol.email}</div>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.empresa || 'N/A'}</span>
+                        <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.company || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="text-gray-400 text-xs">{sol.telefono || '-'}</span>
+                        <span className="text-gray-400 text-xs">{sol.phone || '-'}</span>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.servicio || 'N/A'}</span>
+                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.service || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top min-w-[200px] max-w-xs">
                         <p className="text-gray-300 text-sm line-clamp-3 hover:line-clamp-none transition-all">
-                          {sol.mensaje}
+                          {sol.message}
                         </p>
                       </td>
                       <td className="p-4 align-top">
                         <div className="flex flex-col gap-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(sol.estado)}`}>
-                            {sol.estado.replace('_', ' ')}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(sol.status)}`}>
+                            {sol.status.replace('_', ' ')}
                           </span>
                           <div className="flex flex-row gap-1 mt-1">
-                             {(sol.estado === 'PENDIENTE' || sol.estado === 'EN_REVISION') && (
-                               <button onClick={() => changeStatus(sol.id, 'ACEPTADA')} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40" title="Accept"><CheckCircle size={14}/></button>
-                             )}
-                             {(sol.estado === 'PENDIENTE') && (
-                               <button onClick={() => changeStatus(sol.id, 'EN_REVISION')} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40" title="Review"><Clock size={14}/></button>
-                             )}
-                             {(sol.estado === 'PENDIENTE' || sol.estado === 'EN_REVISION') && (
-                               <button onClick={() => changeStatus(sol.id, 'RECHAZADA')} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Reject"><XCircle size={14}/></button>
-                             )}
+                              {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(sol.id, 'ACCEPTED')} disabled={!statusActionsAvailable} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Accept' : 'Status updates unavailable'}><CheckCircle size={14}/></button>
+                               )}
+                               {(sol.status === 'PENDING') && (
+                                <button onClick={() => changeStatus(sol.id, 'IN_REVIEW')} disabled={!statusActionsAvailable} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Review' : 'Status updates unavailable'}><Clock size={14}/></button>
+                               )}
+                               {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(sol.id, 'REJECTED')} disabled={!statusActionsAvailable} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Reject' : 'Status updates unavailable'}><XCircle size={14}/></button>
+                               )}
                              <button onClick={() => deleteSolicitud(sol.id)} className="p-1.5 bg-gray-500/20 text-gray-400 rounded hover:bg-red-500/40 hover:text-white" title="Delete"><Trash2 size={14}/></button>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 align-top whitespace-nowrap text-xs text-gray-500">
-                        {new Date(sol.creadaEn).toLocaleDateString()}
+                        {sol.createdAt ? new Date(sol.createdAt).toLocaleDateString() : '-'}
                       </td>
                     </tr>
                   ))
