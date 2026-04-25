@@ -8,18 +8,18 @@ import lombok.Data;
 @Data
 public class SolicitudRequest {
     @NotBlank
-    private String nombre;
+    private String name;
 
     @NotBlank
     @Email
     private String email;
 
-    private String empresa;
-    private String telefono;
+    private String company;
+    private String phone;
 
     @NotBlank
     @Size(max = 2000)
-    private String mensaje;
+    private String message;
 
-    private Long servicioId;
+    private Long serviceId;
 }

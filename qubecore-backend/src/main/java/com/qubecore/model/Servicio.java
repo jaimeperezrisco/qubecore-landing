@@ -15,11 +15,8 @@ public class Servicio {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(nullable = false)
-    private String nombre;
-    @Column(length = 1000)
-    private String descripcion;
-    private String icono;
+    private String name;
     @Column(nullable = false)
-    private Boolean activo = true;
-    private Integer orden;
+    private Boolean active = true;
+    private Integer sortOrder;
 }

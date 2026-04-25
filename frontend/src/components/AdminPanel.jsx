@@ -53,12 +53,12 @@ const AdminPanel = () => {
     
     try {
       console.log('Fetching dashboard data...');
-      let url = `${API_URL}/api/admin/solicitudes`;
-      if (filter !== 'ALL') url += `?estado=${filter}`;
+let url = `${API_URL}/api/admin/solicitudes`;
+       if (filter !== 'ALL') url += `?status=${filter}`;
 
-      const [solRes, statsRes] = await Promise.all([
-        fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }),
-        fetch(`${API_URL}/api/admin/solicitudes/estadisticas`, { headers: { 'Authorization': `Bearer ${token}` } })
+       const [solRes, statsRes] = await Promise.all([
+         fetch(url, { headers: { 'Authorization': `Bearer ${token}` } }),
+         fetch(`${API_URL}/api/admin/solicitudes/statistics`, { headers: { 'Authorization': `Bearer ${token}` } })
       ]);
 
       if (solRes.status === 401 || solRes.status === 403) {
@@ -78,7 +78,7 @@ const AdminPanel = () => {
 
   const changeStatus = async (id, newStatus) => {
     try {
-      const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}/estado?estado=${newStatus}`, {
+      const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}/status?status=${newStatus}`, {
         method: 'PATCH',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -107,10 +107,11 @@ const AdminPanel = () => {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'PENDIENTE': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
-      case 'EN_REVISION': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
-      case 'ACEPTADA': return 'text-green-400 bg-green-400/10 border-green-400/20';
-      case 'RECHAZADA': return 'text-red-400 bg-red-400/10 border-red-400/20';
+      case 'PENDING': return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+      case 'IN_REVIEW': return 'text-blue-400 bg-blue-400/10 border-blue-400/20';
+      case 'ACCEPTED': return 'text-green-400 bg-green-400/10 border-green-400/20';
+      case 'REJECTED': return 'text-red-400 bg-red-400/10 border-red-400/20';
+      case 'CLOSED': return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
       default: return 'text-gray-400 bg-gray-400/10 border-gray-400/20';
     }
   };
@@ -197,7 +198,7 @@ const AdminPanel = () => {
         {/* Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2">
           <ListFilter size={18} className="text-[var(--text-secondary)] mr-2" />
-          {['ALL', 'PENDIENTE', 'EN_REVISION', 'ACEPTADA', 'RECHAZADA'].map(s => (
+          {['ALL', 'PENDING', 'IN_REVIEW', 'ACCEPTED', 'REJECTED'].map(s => (
             <button
               key={s}
               onClick={() => setFilter(s)}
@@ -232,44 +233,44 @@ const AdminPanel = () => {
                   solicitudes.map(sol => (
                     <tr key={sol.id} className="border-b border-[var(--glass-border)] hover:bg-white/[0.02]">
                       <td className="p-4 align-top">
-                        <div className="font-medium text-white">{sol.nombre}</div>
+                        <div className="font-medium text-white">{sol.name}</div>
                         <div className="text-xs text-gray-400 mt-1">{sol.email}</div>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.empresa || 'N/A'}</span>
+                        <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.company || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="text-gray-400 text-xs">{sol.telefono || '-'}</span>
+                        <span className="text-gray-400 text-xs">{sol.phone || '-'}</span>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.servicio || 'N/A'}</span>
+                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.service || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top min-w-[200px] max-w-xs">
                         <p className="text-gray-300 text-sm line-clamp-3 hover:line-clamp-none transition-all">
-                          {sol.mensaje}
+                          {sol.message}
                         </p>
                       </td>
                       <td className="p-4 align-top">
                         <div className="flex flex-col gap-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(sol.estado)}`}>
-                            {sol.estado.replace('_', ' ')}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(sol.status)}`}>
+                            {sol.status.replace('_', ' ')}
                           </span>
                           <div className="flex flex-row gap-1 mt-1">
-                             {(sol.estado === 'PENDIENTE' || sol.estado === 'EN_REVISION') && (
-                               <button onClick={() => changeStatus(sol.id, 'ACEPTADA')} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40" title="Accept"><CheckCircle size={14}/></button>
-                             )}
-                             {(sol.estado === 'PENDIENTE') && (
-                               <button onClick={() => changeStatus(sol.id, 'EN_REVISION')} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40" title="Review"><Clock size={14}/></button>
-                             )}
-                             {(sol.estado === 'PENDIENTE' || sol.estado === 'EN_REVISION') && (
-                               <button onClick={() => changeStatus(sol.id, 'RECHAZADA')} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Reject"><XCircle size={14}/></button>
-                             )}
+{(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(sol.id, 'ACCEPTED')} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40" title="Accept"><CheckCircle size={14}/></button>
+                              )}
+                              {(sol.status === 'PENDING') && (
+                                <button onClick={() => changeStatus(sol.id, 'IN_REVIEW')} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40" title="Review"><Clock size={14}/></button>
+                              )}
+                              {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(sol.id, 'REJECTED')} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Reject"><XCircle size={14}/></button>
+                              )}
                              <button onClick={() => deleteSolicitud(sol.id)} className="p-1.5 bg-gray-500/20 text-gray-400 rounded hover:bg-red-500/40 hover:text-white" title="Delete"><Trash2 size={14}/></button>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 align-top whitespace-nowrap text-xs text-gray-500">
-                        {new Date(sol.creadaEn).toLocaleDateString()}
+                        {new Date(sol.createdAt).toLocaleDateString()}
                       </td>
                     </tr>
                   ))
