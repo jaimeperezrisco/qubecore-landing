@@ -14,7 +14,7 @@ public class ServicioService {
     private final ServicioRepository servicioRepository;
 
     public List<Servicio> listActive() {
-        return servicioRepository.findByActivoTrueOrderBySortOrderAsc();
+        return servicioRepository.findByActiveTrueOrderBySortOrderAsc();
     }
 
     public Servicio save(Servicio servicio) {
