@@ -1,34 +1,89 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Mail, User, Building, Phone, MessageSquare, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
-// Interest → serviceId mapping (matches DB order)
-const INTEREST_MAP = {
-  hardware: 1,
-  software: 2,
-  consulting: 3,
-  education: 4,
-  cloud: 5,
-  security: 6,
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+const SERVICE_OPTIONS = [
+  { value: 'hardware', label: 'Quantum Hardware Access' },
+  { value: 'software', label: 'Quantum Software Development' },
+  { value: 'consulting', label: 'Quantum Consulting' },
+  { value: 'education', label: 'Quantum Education' },
+  { value: 'cloud', label: 'Quantum Cloud Services' },
+  { value: 'security', label: 'Quantum Security' },
+];
+
+const FIELD_LABELS = {
+  name: 'Full Name',
+  nombre: 'Full Name',
+  email: 'Email Address',
+  company: 'Company / Organization',
+  empresa: 'Company / Organization',
+  phone: 'Phone',
+  telefono: 'Phone',
+  message: 'Message',
+  mensaje: 'Message',
+  serviceId: 'Area of Interest',
+  servicioId: 'Area of Interest',
+};
+
+const formatApiError = (errorData) => {
+  if (!errorData || typeof errorData !== 'object') {
+    return 'Error submitting request';
+  }
+
+  if (errorData.error) {
+    if (errorData.error === 'Validation failed' && errorData.fieldErrors && typeof errorData.fieldErrors === 'object') {
+      const [firstField, firstMessage] = Object.entries(errorData.fieldErrors)[0] || [];
+
+      if (firstMessage) {
+        return `${FIELD_LABELS[firstField] || firstField}: ${firstMessage}`;
+      }
+    }
+
+    return errorData.error;
+  }
+
+  const [firstField, firstMessage] = Object.entries(errorData)[0] || [];
+  if (firstMessage) {
+    return `${FIELD_LABELS[firstField] || firstField}: ${firstMessage}`;
+  }
+
+  return 'Error submitting request';
+};
+
+const readErrorResponse = async (response) => {
+  const text = await response.text();
+
+  if (!text) {
+    return { error: 'Error submitting request' };
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return { error: text };
+  }
 };
 
 const Contact = () => {
   const ref = useRef(null);
   const formRef = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  
-const [formData, setFormData] = useState({
-     name: '',
-     company: '',
-     email: '',
-     phone: '',
-     interest: 'hardware',
-     message: '',
-   });
+  const [serviceIdMap, setServiceIdMap] = useState({});
 
-    const [consents, setConsents] = useState({
-      rgpd: false,
-    });
+  const [formData, setFormData] = useState({
+    name: '',
+    company: '',
+    email: '',
+    phone: '',
+    interest: 'hardware',
+    message: '',
+  });
+
+  const [consents, setConsents] = useState({
+    rgpd: false,
+  });
 
   const [formStatus, setFormStatus] = useState({
     loading: false,
@@ -37,7 +92,38 @@ const [formData, setFormData] = useState({
     message: '',
   });
 
-const handleSubmit = async (e) => {
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/servicios`);
+
+        if (!response.ok) {
+          return;
+        }
+
+        const services = await response.json();
+        const nextServiceIdMap = {};
+
+        SERVICE_OPTIONS.forEach((option) => {
+          const matchedService = services.find((service) => {
+            const serviceName = service.name || service.nombre;
+            return serviceName === option.label;
+          });
+          if (matchedService) {
+            nextServiceIdMap[option.value] = matchedService.id;
+          }
+        });
+
+        setServiceIdMap(nextServiceIdMap);
+      } catch (error) {
+        console.error('Error loading services:', error);
+      }
+    };
+
+    loadServices();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!consents.rgpd) {
@@ -53,28 +139,29 @@ const handleSubmit = async (e) => {
     setFormStatus({ loading: true, success: false, error: false, message: '' });
 
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
       const response = await fetch(`${API_URL}/api/solicitudes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-           name: formData.name,
-           email: formData.email,
-           company: formData.company,
-           phone: formData.phone || null,
-           message: formData.message,
-           serviceId: INTEREST_MAP[formData.interest] || null,
-         })
+        body: JSON.stringify({
+          name: formData.name,
+          nombre: formData.name,
+          email: formData.email,
+          company: formData.company,
+          empresa: formData.company,
+          phone: formData.phone || null,
+          telefono: formData.phone || null,
+          message: formData.message,
+          mensaje: formData.message,
+          serviceId: serviceIdMap[formData.interest] || null,
+          servicioId: serviceIdMap[formData.interest] || null,
+        })
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error submitting request');
+        const errorData = await readErrorResponse(response);
+        throw new Error(formatApiError(errorData));
       }
 
-      console.log('Request created successfully');
-
-      // Success state
       setFormStatus({
         loading: false,
         success: true,
@@ -82,27 +169,24 @@ body: JSON.stringify({
         message: 'Thank you! Your request has been sent successfully. We will contact you soon.',
       });
 
-      // Reset form
-setFormData({
-         name: '',
-         company: '',
-         email: '',
-         phone: '',
-         interest: 'hardware',
-         message: '',
-       });
+      setFormData({
+        name: '',
+        company: '',
+        email: '',
+        phone: '',
+        interest: 'hardware',
+        message: '',
+      });
 
       setConsents({ rgpd: false });
 
-      // Reset success message after 5 seconds
       setTimeout(() => {
         setFormStatus({ loading: false, success: false, error: false, message: '' });
       }, 5000);
 
     } catch (error) {
       console.error('Request Error:', error);
-      
-      // Error state
+
       setFormStatus({
         loading: false,
         success: false,
@@ -110,7 +194,6 @@ setFormData({
         message: `Oops! Something went wrong: ${error.message}. Please try again.`,
       });
 
-      // Reset error message after 5 seconds
       setTimeout(() => {
         setFormStatus({ loading: false, success: false, error: false, message: '' });
       }, 5000);
@@ -120,12 +203,12 @@ setFormData({
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'rgpd') {
-      setConsents(prev => ({ ...prev, [name]: e.target.checked }));
+      setConsents((prev) => ({ ...prev, [name]: e.target.checked }));
     } else if (name === 'phone') {
       const numericValue = value.replace(/[^0-9+]/g, '');
-      setFormData(prev => ({ ...prev, [name]: numericValue }));
+      setFormData((prev) => ({ ...prev, [name]: numericValue }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -212,7 +295,6 @@ setFormData({
                 name="company"
                 value={formData.company}
                 onChange={handleChange}
-                required
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
@@ -249,18 +331,18 @@ setFormData({
                 <Phone size={18} className="text-[var(--accent-cyan)]" />
                 Phone (optional)
               </label>
-<input
-                 type="tel"
-                 name="phone"
-                 value={formData.phone}
-                 onChange={handleChange}
-                 disabled={formStatus.loading}
-                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
-                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
-                          focus:outline-none focus:border-[var(--accent-cyan)] transition-all
-                          disabled:opacity-50 disabled:cursor-not-allowed"
-                 placeholder="+34 612 345 678"
-               />
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                disabled={formStatus.loading}
+                className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
+                         bg-[var(--glass-bg)] text-[var(--text-primary)] 
+                         focus:outline-none focus:border-[var(--accent-cyan)] transition-all
+                         disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="+34 612 345 678"
+              />
             </div>
 
             {/* Interest */}
@@ -278,12 +360,9 @@ setFormData({
                          focus:outline-none focus:border-[var(--accent-cyan)] transition-all
                          disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value="hardware">Quantum Hardware Access</option>
-                <option value="software">Quantum Software Development</option>
-                <option value="consulting">Quantum Consulting</option>
-                <option value="education">Quantum Education</option>
-                <option value="cloud">Quantum Cloud Services</option>
-                <option value="security">Quantum Security</option>
+                {SERVICE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
               </select>
             </div>
 
@@ -299,6 +378,7 @@ setFormData({
                 onChange={handleChange}
                 rows="5"
                 maxLength={2000}
+                required
                 disabled={formStatus.loading}
                 className="w-full px-4 py-3 rounded-xl glass border border-[var(--glass-border)] 
                          bg-[var(--glass-bg)] text-[var(--text-primary)] 
