@@ -7,7 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class CreateInquiryRequest {
+public class SolicitudRequest {
     @NotBlank
     private String name;
 

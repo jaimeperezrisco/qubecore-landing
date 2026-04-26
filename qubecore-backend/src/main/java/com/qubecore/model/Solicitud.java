@@ -1,6 +1,6 @@
 package com.qubecore.model;
 
-import com.qubecore.model.enums.InquiryStatus;
+import com.qubecore.model.enums.EstadoSolicitud;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,11 +10,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "inquiries")
+@Table(name = "solicitudes")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Inquiry {
+public class Solicitud {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -32,12 +32,12 @@ public class Inquiry {
     private String message;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "service_offering_id")
-    private ServiceOffering serviceOffering;
+    @JoinColumn(name = "servicio_id")
+    private Servicio servicio;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private InquiryStatus status = InquiryStatus.PENDING;
+    private EstadoSolicitud status = EstadoSolicitud.PENDING;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -48,6 +48,6 @@ public class Inquiry {
     private String internalNotes;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "handled_by_user_id")
-    private User handledBy;
+    @JoinColumn(name = "handled_by")
+    private Usuario handledBy;
 }
