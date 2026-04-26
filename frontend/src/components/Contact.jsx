@@ -15,16 +15,11 @@ const SERVICE_OPTIONS = [
 
 const FIELD_LABELS = {
   name: 'Full Name',
-  nombre: 'Full Name',
   email: 'Email Address',
   company: 'Company / Organization',
-  empresa: 'Company / Organization',
   phone: 'Phone',
-  telefono: 'Phone',
   message: 'Message',
-  mensaje: 'Message',
   serviceId: 'Area of Interest',
-  servicioId: 'Area of Interest',
 };
 
 const formatApiError = (errorData) => {
@@ -95,7 +90,7 @@ const Contact = () => {
   useEffect(() => {
     const loadServices = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/servicios`);
+        const response = await fetch(`${API_URL}/api/services`);
 
         if (!response.ok) {
           return;
@@ -105,10 +100,7 @@ const Contact = () => {
         const nextServiceIdMap = {};
 
         SERVICE_OPTIONS.forEach((option) => {
-          const matchedService = services.find((service) => {
-            const serviceName = service.name || service.nombre;
-            return serviceName === option.label;
-          });
+          const matchedService = services.find((service) => service.name === option.label);
           if (matchedService) {
             nextServiceIdMap[option.value] = matchedService.id;
           }
@@ -139,21 +131,16 @@ const Contact = () => {
     setFormStatus({ loading: true, success: false, error: false, message: '' });
 
     try {
-      const response = await fetch(`${API_URL}/api/solicitudes`, {
+      const response = await fetch(`${API_URL}/api/inquiries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: formData.name,
-          nombre: formData.name,
           email: formData.email,
           company: formData.company,
-          empresa: formData.company,
           phone: formData.phone || null,
-          telefono: formData.phone || null,
           message: formData.message,
-          mensaje: formData.message,
           serviceId: serviceIdMap[formData.interest] || null,
-          servicioId: serviceIdMap[formData.interest] || null,
         })
       });
 

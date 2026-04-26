@@ -10,21 +10,6 @@ const EMPTY_STATS = {
   CLOSED: 0,
 };
 
-const STATUS_ALIASES = {
-  PENDING: ['PENDING', 'PENDIENTE'],
-  IN_REVIEW: ['IN_REVIEW', 'EN_REVISION'],
-  ACCEPTED: ['ACCEPTED', 'ACEPTED', 'ACEPTADA'],
-  REJECTED: ['REJECTED', 'RECHAZADA'],
-  CLOSED: ['CLOSED', 'CERRADA'],
-};
-
-const STATUS_NORMALIZATION = Object.entries(STATUS_ALIASES).reduce((acc, [englishStatus, aliases]) => {
-  aliases.forEach((alias) => {
-    acc[alias] = englishStatus;
-  });
-  return acc;
-}, {});
-
 const readJsonSafely = async (response) => {
   const text = await response.text();
 
@@ -39,21 +24,6 @@ const readJsonSafely = async (response) => {
   }
 };
 
-const normalizeStatus = (status) => STATUS_NORMALIZATION[status] || status;
-
-const normalizeRequest = (request) => ({
-  id: request.id,
-  name: request.name || request.nombre || '',
-  email: request.email || '',
-  company: request.company ?? request.empresa ?? '',
-  phone: request.phone ?? request.telefono ?? '',
-  service: request.service ?? request.servicio ?? '',
-  message: request.message ?? request.mensaje ?? '',
-  status: normalizeStatus(request.status || request.estado || 'PENDING'),
-  createdAt: request.createdAt || request.creadaEn || null,
-  internalNotes: request.internalNotes ?? request.notasInternas ?? null,
-});
-
 const normalizeStats = (statsData) => {
   const nextStats = { ...EMPTY_STATS };
 
@@ -62,21 +32,20 @@ const normalizeStats = (statsData) => {
   }
 
   Object.entries(statsData).forEach(([key, value]) => {
-    const normalizedKey = normalizeStatus(key);
-    if (normalizedKey in nextStats) {
-      nextStats[normalizedKey] = value;
+    if (key in nextStats) {
+      nextStats[key] = value;
     }
   });
 
   return nextStats;
 };
 
-const buildStatsFromRequests = (requests) => {
+const buildStatsFromInquiries = (inquiries) => {
   const nextStats = { ...EMPTY_STATS };
 
-  requests.forEach((request) => {
-    if (request.status in nextStats) {
-      nextStats[request.status] += 1;
+  inquiries.forEach((inquiry) => {
+    if (inquiry.status in nextStats) {
+      nextStats[inquiry.status] += 1;
     }
   });
 
@@ -84,50 +53,30 @@ const buildStatsFromRequests = (requests) => {
 };
 
 const buildListUrls = (filter) => {
-  const baseUrl = `${API_URL}/api/admin/solicitudes`;
+  const baseUrl = `${API_URL}/api/admin/inquiries`;
 
   if (filter === 'ALL') {
     return [baseUrl];
   }
 
-  const statuses = STATUS_ALIASES[filter] || [filter];
-  const urls = [];
-
-  statuses.forEach((status) => {
-    urls.push(`${baseUrl}?status=${encodeURIComponent(status)}`);
-    urls.push(`${baseUrl}?estado=${encodeURIComponent(status)}`);
-  });
-
-  return [...new Set(urls)];
+  return [`${baseUrl}?status=${encodeURIComponent(filter)}`];
 };
 
 const buildStatusUpdateUrls = (id, nextStatus) => {
-  const statuses = STATUS_ALIASES[nextStatus] || [nextStatus];
-  const urls = [];
-
-  statuses.forEach((status) => {
-    urls.push(`${API_URL}/api/admin/solicitudes/${id}/status?status=${encodeURIComponent(status)}`);
-    urls.push(`${API_URL}/api/admin/solicitudes/${id}/estado?estado=${encodeURIComponent(status)}`);
-  });
-
-  return [...new Set(urls)];
+  return [`${API_URL}/api/admin/inquiries/${id}/status?status=${encodeURIComponent(nextStatus)}`];
 };
 
-const buildStatsUrls = () => ([
-  `${API_URL}/api/admin/solicitudes/statistics`,
-  `${API_URL}/api/admin/solicitudes/estadisticas`,
-]);
+const buildStatsUrls = () => [`${API_URL}/api/admin/inquiries/statistics`];
 
 const AdminPanel = () => {
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [solicitudes, setSolicitudes] = useState([]);
+  const [inquiries, setInquiries] = useState([]);
   const [stats, setStats] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
-  const [statusActionsAvailable, setStatusActionsAvailable] = useState(true);
   const [filter, setFilter] = useState('ALL');
 
   useEffect(() => {
@@ -161,10 +110,9 @@ const AdminPanel = () => {
   const handleLogout = () => {
     setToken('');
     localStorage.removeItem('token');
-    setSolicitudes([]);
+    setInquiries([]);
     setStats({});
     setActionError('');
-    setStatusActionsAvailable(true);
   };
 
   const loadDashboardData = async () => {
@@ -190,7 +138,7 @@ const AdminPanel = () => {
       }
 
       if (!solRes) {
-        throw new Error('Unable to load requests');
+        throw new Error('Unable to load inquiries');
       }
 
       let statsRes = null;
@@ -205,11 +153,11 @@ const AdminPanel = () => {
       }
 
       const solData = await readJsonSafely(solRes);
-      const normalizedRequests = Array.isArray(solData) ? solData.map(normalizeRequest) : [];
+      const normalizedInquiries = Array.isArray(solData) ? solData : [];
       const statsData = statsRes ? await readJsonSafely(statsRes) : null;
       
-      setSolicitudes(normalizedRequests);
-      setStats(statsData ? normalizeStats(statsData) : buildStatsFromRequests(normalizedRequests));
+      setInquiries(normalizedInquiries);
+      setStats(statsData ? normalizeStats(statsData) : buildStatsFromInquiries(normalizedInquiries));
     } catch (err) {
       console.error('Error fetching dashboard:', err);
     }
@@ -218,7 +166,6 @@ const AdminPanel = () => {
   const changeStatus = async (id, newStatus) => {
     try {
       setActionError('');
-      let authRejected = false;
 
       for (const url of buildStatusUpdateUrls(id, newStatus)) {
         const res = await fetch(url, {
@@ -227,36 +174,23 @@ const AdminPanel = () => {
         });
 
         if (res.ok) {
-          setStatusActionsAvailable(true);
           loadDashboardData();
           return;
         }
-
-        if (res.status === 401 || res.status === 403) {
-          authRejected = true;
-        }
       }
 
-      if (authRejected) {
-        setStatusActionsAvailable(false);
-        setActionError('Status updates are unavailable in the current backend deployment. Delete is still available.');
-        return;
-      }
-
-      setStatusActionsAvailable(true);
-      setActionError('Unable to update the request status right now.');
+      setActionError('Unable to update the inquiry status right now.');
     } catch (err) {
       console.error('Error updating status', err);
-      setStatusActionsAvailable(true);
-      setActionError('Unable to update the request status right now.');
+      setActionError('Unable to update the inquiry status right now.');
     }
   };
 
-  const deleteSolicitud = async (id) => {
-    if(!confirm('Are you sure you want to delete this request?')) return;
+  const deleteInquiry = async (id) => {
+    if(!confirm('Are you sure you want to delete this inquiry?')) return;
     try {
       setActionError('');
-      const res = await fetch(`${API_URL}/api/admin/solicitudes/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/inquiries/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -265,7 +199,7 @@ const AdminPanel = () => {
       }
     } catch (err) {
       console.error('Error deleting', err);
-      setActionError('Unable to delete the request right now.');
+      setActionError('Unable to delete the inquiry right now.');
     }
   };
 
@@ -395,52 +329,52 @@ const AdminPanel = () => {
                 </tr>
               </thead>
               <tbody>
-                {solicitudes.length === 0 ? (
+                {inquiries.length === 0 ? (
                   <tr>
-                    <td colSpan="7" className="p-8 text-center text-gray-500 italic">No incoming requests found.</td>
+                    <td colSpan="7" className="p-8 text-center text-gray-500 italic">No inquiries found.</td>
                   </tr>
                 ) : (
-                  solicitudes.map(sol => (
-                    <tr key={sol.id} className="border-b border-[var(--glass-border)] hover:bg-white/[0.02]">
+                  inquiries.map((inquiry) => (
+                    <tr key={inquiry.id} className="border-b border-[var(--glass-border)] hover:bg-white/[0.02]">
                       <td className="p-4 align-top">
-                        <div className="font-medium text-white">{sol.name}</div>
-                        <div className="text-xs text-gray-400 mt-1">{sol.email}</div>
+                        <div className="font-medium text-white">{inquiry.name}</div>
+                        <div className="text-xs text-gray-400 mt-1">{inquiry.email}</div>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="bg-white/10 px-2 py-1 rounded text-xs">{sol.company || 'N/A'}</span>
+                        <span className="bg-white/10 px-2 py-1 rounded text-xs">{inquiry.company || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="text-gray-400 text-xs">{sol.phone || '-'}</span>
+                        <span className="text-gray-400 text-xs">{inquiry.phone || '-'}</span>
                       </td>
                       <td className="p-4 align-top">
-                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{sol.service || 'N/A'}</span>
+                        <span className="bg-[var(--accent-cyan)]/20 text-[var(--accent-cyan)] px-2 py-1 rounded text-xs">{inquiry.service || 'N/A'}</span>
                       </td>
                       <td className="p-4 align-top min-w-[200px] max-w-xs">
                         <p className="text-gray-300 text-sm line-clamp-3 hover:line-clamp-none transition-all">
-                          {sol.message}
+                          {inquiry.message}
                         </p>
                       </td>
                       <td className="p-4 align-top">
                         <div className="flex flex-col gap-2">
-                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(sol.status)}`}>
-                            {sol.status.replace('_', ' ')}
+                          <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] uppercase font-semibold border w-fit ${getStatusColor(inquiry.status)}`}>
+                            {inquiry.status.replace('_', ' ')}
                           </span>
                           <div className="flex flex-row gap-1 mt-1">
-                              {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
-                                <button onClick={() => changeStatus(sol.id, 'ACCEPTED')} disabled={!statusActionsAvailable} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Accept' : 'Status updates unavailable'}><CheckCircle size={14}/></button>
+                              {(inquiry.status === 'PENDING' || inquiry.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(inquiry.id, 'ACCEPTED')} className="p-1.5 bg-green-500/20 text-green-400 rounded hover:bg-green-500/40" title="Accept"><CheckCircle size={14}/></button>
                                )}
-                               {(sol.status === 'PENDING') && (
-                                <button onClick={() => changeStatus(sol.id, 'IN_REVIEW')} disabled={!statusActionsAvailable} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Review' : 'Status updates unavailable'}><Clock size={14}/></button>
+                               {(inquiry.status === 'PENDING') && (
+                                <button onClick={() => changeStatus(inquiry.id, 'IN_REVIEW')} className="p-1.5 bg-blue-500/20 text-blue-400 rounded hover:bg-blue-500/40" title="Review"><Clock size={14}/></button>
                                )}
-                               {(sol.status === 'PENDING' || sol.status === 'IN_REVIEW') && (
-                                <button onClick={() => changeStatus(sol.id, 'REJECTED')} disabled={!statusActionsAvailable} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 disabled:opacity-40 disabled:cursor-not-allowed" title={statusActionsAvailable ? 'Reject' : 'Status updates unavailable'}><XCircle size={14}/></button>
+                               {(inquiry.status === 'PENDING' || inquiry.status === 'IN_REVIEW') && (
+                                <button onClick={() => changeStatus(inquiry.id, 'REJECTED')} className="p-1.5 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40" title="Reject"><XCircle size={14}/></button>
                                )}
-                             <button onClick={() => deleteSolicitud(sol.id)} className="p-1.5 bg-gray-500/20 text-gray-400 rounded hover:bg-red-500/40 hover:text-white" title="Delete"><Trash2 size={14}/></button>
-                          </div>
+                              <button onClick={() => deleteInquiry(inquiry.id)} className="p-1.5 bg-gray-500/20 text-gray-400 rounded hover:bg-red-500/40 hover:text-white" title="Delete"><Trash2 size={14}/></button>
+                           </div>
                         </div>
                       </td>
                       <td className="p-4 align-top whitespace-nowrap text-xs text-gray-500">
-                        {sol.createdAt ? new Date(sol.createdAt).toLocaleDateString() : '-'}
+                        {inquiry.createdAt ? new Date(inquiry.createdAt).toLocaleDateString() : '-'}
                       </td>
                     </tr>
                   ))
