@@ -3,9 +3,9 @@ package com.qubecore.service;
 import com.qubecore.dto.JwtResponse;
 import com.qubecore.dto.LoginRequest;
 import com.qubecore.dto.RegisterRequest;
-import com.qubecore.model.Usuario;
-import com.qubecore.model.enums.RolUsuario;
-import com.qubecore.repository.UsuarioRepository;
+import com.qubecore.model.User;
+import com.qubecore.model.enums.UserRole;
+import com.qubecore.repository.UserRepository;
 import com.qubecore.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ public class AuthService {
     private static final int MAX_ATTEMPTS = 5;
     private static final long LOCKOUT_MS = 15 * 60 * 1000;
 
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authManager;
     private final JwtTokenProvider tokenProvider;
@@ -52,14 +52,14 @@ public class AuthService {
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
             String token = tokenProvider.generateToken(auth);
-            Usuario usuario = (Usuario) auth.getPrincipal();
+            User user = (User) auth.getPrincipal();
 
             attemptTracker.remove(clientIp);
             logger.info("LOGIN_SUCCESS | email: {} | ip: {} | timestamp: {}",
                 request.getEmail(), clientIp, LocalDateTime.now());
 
-            return new JwtResponse(token, "Bearer", usuario.getId(),
-                    usuario.getName(), usuario.getEmail(), usuario.getRole().name());
+            return new JwtResponse(token, "Bearer", user.getId(),
+                    user.getName(), user.getEmail(), user.getRole().name());
 
         } catch (Exception e) {
             registerFailedAttempt(clientIp, request.getEmail());
@@ -71,17 +71,17 @@ public class AuthService {
     }
 
     public String register(RegisterRequest request) {
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             logger.warn("REGISTER_FAILED | email: {} | reason: already_exists | timestamp: {}",
                 request.getEmail(), LocalDateTime.now());
             throw new IllegalArgumentException("Invalid credentials");
         }
-        Usuario usuario = new Usuario();
-        usuario.setName(request.getName());
-        usuario.setEmail(request.getEmail());
-        usuario.setPassword(passwordEncoder.encode(request.getPassword()));
-        usuario.setRole(RolUsuario.ROLE_USER);
-        usuarioRepository.save(usuario);
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setRole(UserRole.ROLE_USER);
+        userRepository.save(user);
 
         logger.info("REGISTER_SUCCESS | email: {} | timestamp: {}",
             request.getEmail(), LocalDateTime.now());
