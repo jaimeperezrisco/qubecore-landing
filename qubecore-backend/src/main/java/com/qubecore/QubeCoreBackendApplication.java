@@ -1,10 +1,10 @@
 package com.qubecore;
 
-import com.qubecore.model.ServiceOffering;
-import com.qubecore.model.User;
-import com.qubecore.model.enums.UserRole;
-import com.qubecore.repository.ServiceOfferingRepository;
-import com.qubecore.repository.UserRepository;
+import com.qubecore.model.Servicio;
+import com.qubecore.model.Usuario;
+import com.qubecore.model.enums.RolUsuario;
+import com.qubecore.repository.ServicioRepository;
+import com.qubecore.repository.UsuarioRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,30 +21,30 @@ public class QubeCoreBackendApplication {
     }
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepository, 
-                                      ServiceOfferingRepository serviceOfferingRepository, 
+    public CommandLineRunner initData(UsuarioRepository usuarioRepository, 
+                                      ServicioRepository servicioRepository, 
                                       PasswordEncoder passwordEncoder) {
         return args -> {
-            if (!userRepository.existsByEmail("admin@qubecore.es")) {
-                User admin = new User();
+            if (!usuarioRepository.existsByEmail("admin@qubecore.es")) {
+                Usuario admin = new Usuario();
                 admin.setEmail("admin@qubecore.es");
                 admin.setName("Admin QubeCore");
                 admin.setPassword(passwordEncoder.encode("Admin123!"));
-                admin.setRole(UserRole.ROLE_ADMIN);
+                admin.setRole(RolUsuario.ROLE_ADMIN);
                 admin.setActive(true);
                 admin.setCreatedAt(LocalDateTime.now());
-                userRepository.save(admin);
+                usuarioRepository.save(admin);
                 System.out.println("Admin user auto-generated successfully.");
             }
 
-            if (serviceOfferingRepository.count() == 0) {
-                serviceOfferingRepository.saveAll(List.of(
-                    new ServiceOffering(null, "Quantum Hardware Access", true, 1),
-                    new ServiceOffering(null, "Quantum Software Development", true, 2),
-                    new ServiceOffering(null, "Quantum Consulting", true, 3),
-                    new ServiceOffering(null, "Quantum Education", true, 4),
-                    new ServiceOffering(null, "Quantum Cloud Services", true, 5),
-                    new ServiceOffering(null, "Quantum Security", true, 6)
+            if (servicioRepository.count() == 0) {
+                servicioRepository.saveAll(List.of(
+                    new Servicio(null, "Quantum Hardware Access", true, 1),
+                    new Servicio(null, "Quantum Software Development", true, 2),
+                    new Servicio(null, "Quantum Consulting", true, 3),
+                    new Servicio(null, "Quantum Education", true, 4),
+                    new Servicio(null, "Quantum Cloud Services", true, 5),
+                    new Servicio(null, "Quantum Security", true, 6)
                 ));
                 System.out.println("Base services auto-generated successfully.");
             }
